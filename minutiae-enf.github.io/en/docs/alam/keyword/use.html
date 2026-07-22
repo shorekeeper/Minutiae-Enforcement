@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/override">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>override - ALAM reference</title>
+    <meta name="description" content="Detailed reference for replacing current ALAM automaton members by principal event, ordering, empty replacement warnings, and Java implementation.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'automaton', href: 'automaton.html', group: 'Container' },
+            { label: 'use', href: 'use.html', group: 'Sibling item' },
+            { label: 'rule', href: 'rule.html', group: 'Consumes' },
+            { label: 'Event', href: '../event/Event.html' },
+            { label: 'E022', href: '../diag/E022.html', group: 'Diagnostics' },
+            { label: 'E025', href: '../diag/E025.html' },
+            { label: 'W001', href: '../diag/W001.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>override</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Removes every current automaton member whose first declared event equals a selected event type, then appends one replacement rule.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Automaton item</td></tr>
+                <tr><th>Container</th><td><code>automaton</code></td></tr>
+                <tr><th>Selection key</th><td>Rule's first declared event</td></tr>
+                <tr><th>Removal scope</th><td>All current members, inherited and local</td></tr>
+                <tr><th>Replacement position</th><td>End of remaining membership</td></tr>
+                <tr><th>No matching member</th><td>Replacement still inserted; <code>W001</code> emitted</td></tr>
+                <tr><th>Runtime state</th><td>None; resolved at compile time</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>override&lt;event_type&gt; use replacement_rule;</code></pre>
+            <pre class="gram"><code>override-item =
+    "override" "&lt;" event-type "&gt;"
+    "use" replacement-rule ";" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Part</th><th>Required form</th><th>Description</th></tr>
+                <tr><td><code>event_type</code></td><td>Known concrete event</td><td>Selects current members by principal event.</td></tr>
+                <tr><td><code>replacement_rule</code></td><td>Earlier explicit rule</td><td>Rule appended after matching members are removed.</td></tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The item occurs outside an automaton body.</li>
+                    <li>The event type is unknown.</li>
+                    <li>The replacement does not name an earlier explicit rule.</li>
+                    <li>The replacement rule's first declared event differs from <code>event_type</code>.</li>
+                </ol>
+            </div>
+
+            <p>The selected event need not currently exist in membership. That condition is a warning rather than an error.</p>
+            <p>Generated rules cannot be used as replacements because they have no source-addressable explicit rule symbol.</p>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>Let <code>current</code> be the ordered membership immediately before the item:</p>
+            <ol>
+                <li>Scan every member in order.</li>
+                <li>Read <code>member.events[0]</code>.</li>
+                <li>Remove the member when that event equals <code>event_type</code>.</li>
+                <li>Retain all other members in their original relative order.</li>
+                <li>Append <code>replacement_rule</code>.</li>
+            </ol>
+
+            <pre class="synopsis"><code>current =
+    [chat_a, login_a, chat_b, break_a]
+
+override&lt;Chat&gt; use chat_strict;
+
+result =
+    [login_a, break_a, chat_strict]</code></pre>
+
+            <h3 id="principal-event">Principal event</h3>
+            <p>The first event in the rule header is the principal event used by override.</p>
+            <pre><code class="language-alam">rule&lt;Login, Chat&gt; login_then_chat {
+    ...
+}</code></pre>
+            <p>This rule is removed by <code>override&lt;Login&gt;</code>, not by <code>override&lt;Chat&gt;</code>.</p>
+
+            <h3 id="current-membership">Current membership</h3>
+            <p>The implementation scans all current members. This includes:</p>
+            <ul>
+                <li>rules copied from the parent automaton;</li>
+                <li>rules retained after earlier overrides;</li>
+                <li>rules inserted by earlier <code>use</code> items;</li>
+                <li>replacement rules inserted by earlier overrides.</li>
+            </ul>
+
+            <div class="callout note">
+                <span class="label">W001 wording</span>
+                <p>The current warning text says that the override removed no inherited rule. The implementation actually tests all current membership, not inherited membership only.</p>
+            </div>
+
+            <h3 id="replacement-already-present">Replacement already present</h3>
+            <p>The replacement rule is guaranteed to have the selected principal event. If it is already present in current membership, the removal scan removes it before reinsertion. The item therefore moves it to the end of the remaining membership.</p>
+            <p>Unlike <code>use</code>, <code>override</code> does not produce <code>V017</code> for this case.</p>
+
+            <h3 id="empty-removal">No matching member</h3>
+            <p>When no member is removed, <code>W001</code> is emitted and the replacement is still appended. The automaton remains valid and may be published.</p>
+
+            <div class="normative">
+                <span class="normative-label">Postcondition</span>
+                <p>After a successful override, the replacement is the only current member with its own rule name. Other rules with the selected principal event have been removed.</p>
+            </div>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff pure">pure</span> Membership replacement is compile-time set algebra and creates no runtime effect itself.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>Elaboration validates replacement compatibility:</p>
+                <pre><code class="language-java">final Symbol.RuleSym replacement =
+    requireRule(
+        override.rule(),
+        override.pos()
+    );
+
+if (!replacement.type()
+        .events()
+        .get(0)
+        .name()
+        .equals(override.event())) {
+    error(
+        "E022",
+        override.pos(),
+        "rule '" + override.rule()
+            + "' is bound to event '"
+            + replacement.type()
+                .events()
+                .get(0)
+                .name()
+            + "' and cannot replace rules on '"
+            + override.event()
+            + "'"
+    );
+
+    throw Abort.INSTANCE;
+}</code></pre>
+
+                <p>Evaluation removes through the ordered map iterator:</p>
+                <pre><code class="language-java">int removed = 0;
+final var iterator =
+    current.entrySet().iterator();
+
+while (iterator.hasNext()) {
+    if (iterator.next()
+            .getValue()
+            .events()
+            .get(0)
+            .name()
+            .equals(override.event())) {
+        iterator.remove();
+        removed++;
+    }
+}</code></pre>
+
+                <p>The warning does not prevent insertion:</p>
+                <pre><code class="language-java">if (removed == 0) {
+    diags.warning(
+        "W001",
+        override.pos().line(),
+        override.pos().column(),
+        "override on '"
+            + override.event()
+            + "' removed no inherited rule"
+    );
+}
+
+current.put(
+    override.rule(),
+    rules.get(override.rule())
+);</code></pre>
+
+                <ul>
+                    <li><code>current</code> is a <code>LinkedHashMap</code>.</li>
+                    <li><code>Map.put</code> appends an absent replacement at the end.</li>
+                    <li>If an existing replacement survived, <code>put</code> would preserve its current position, but valid event compatibility ensures it was selected and removed first.</li>
+                    <li>The resolved immutable automaton list contains no override metadata.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Validation</dt><dd>O(1) after symbol lookup.</dd>
+                    <dt>Removal</dt><dd>O(M), where M is current membership count.</dd>
+                    <dt>Insertion</dt><dd>Expected O(1).</dd>
+                    <dt>Additional storage</dt><dd>O(1), excluding the resulting membership list.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">automaton base_watch {
+    use chat_length;
+    use chat_repetition;
+    use login_evasion;
+}
+
+automaton strict_chat : base_watch {
+    override&lt;Chat&gt; use strict_chat_policy;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>The event, <code>use</code> token, replacement name, delimiter, or semicolon is missing.</td></tr>
+                <tr><td><code>E022</code></td><td>Elaboration</td><td>The replacement is not an explicit rule or has a different principal event.</td></tr>
+                <tr><td><code>E025</code></td><td>Elaboration</td><td>The selected event type is unknown.</td></tr>
+                <tr><td><code>W001</code></td><td>Evaluation</td><td>No current member was removed for the selected event.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>automaton</code></td><td>Defines current membership and source-order item application.</td></tr>
+                <tr><td><code>use</code></td><td>Appends a rule without removing event peers.</td></tr>
+                <tr><td><code>rule</code></td><td>Defines the principal event used by replacement.</td></tr>
+                <tr><td><code>W001</code></td><td>Warning emitted when replacement removes no current rule.</td></tr>
+            </table>
+
+            <footer class="site-footer"><span>Minutiae Enforcement</span><a href="../">ALAM reference</a></footer>
+        </article>
+    </main>
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

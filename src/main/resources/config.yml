@@ -1,0 +1,343 @@
+# ==========================================================================
+# Minutiae Enforcement - runtime configuration
+# ==========================================================================
+
+# ==========================================================================
+# User-facing message localisation.
+# --------------------------------------------------------------------------
+# Message templates are authored in MiniMessage format under lang/<tag>.yml.
+# The bundle for a recipient is selected by locale with a fallback chain:
+# the exact tag (e.g. en_us), then the language (en), then the default locale
+# below, then a built-in placeholder. Operator log output is unaffected and
+# remains English.
+# ==========================================================================
+messages:
+  default-locale: ru
+  per-player-locale: true
+  reason:
+    # Maximum characters of a reason shown inline before it is abbreviated with
+    # an ellipsis; the full reason remains available in the hover card.
+    abbreviate: 32
+
+# ==========================================================================
+# Rank attribution.
+# --------------------------------------------------------------------------
+# Maps permission nodes to rank identifiers used in broadcasts and staff
+# notifications through the {rank} placeholder. Entries are scanned in order;
+# the first node the issuer holds wins, so list senior ranks first. Display
+# names are localised in lang/<tag>.yml under rank.<id>. The console sender
+# resolves to 'console' without a scan; senders matching nothing resolve to
+# 'default'.
+# ==========================================================================
+ranks:
+  default: staff
+  console: console
+  entries:
+    - { id: administrator, permission: minutiae.rank.administrator }
+    - { id: moderator, permission: minutiae.rank.moderator }
+    - { id: helper, permission: minutiae.rank.helper }
+
+# ==========================================================================
+# Public broadcast of applied sanctions.
+# --------------------------------------------------------------------------
+# When enabled, a sanction whose measure is listed below is announced to all
+# online players. The @silent annotation (and @shadow, which implies it)
+# suppresses the broadcast. Warnings and stayed or dry-run sanctions are never
+# broadcast.
+# ==========================================================================
+broadcast:
+  enabled: true
+  measures: [SUSPENSION, CUSTODY, KICK, MUTE, QUARANTINE]
+  # Announce lifted sanctions publicly.
+  lift: true
+
+storage:
+  # Backend selector. Supported: SQLITE. Reserved: MYSQL.
+  driver: SQLITE
+
+  sqlite:
+    # Database file path, resolved relative to the plugin data folder unless
+    # an absolute path is supplied.
+    file: minutiae.db
+
+  pool:
+    # Maximum number of physical JDBC connections held by the pool.
+    max-connections: 4
+    # Connection acquisition timeout in milliseconds. A borrow attempt that
+    # exceeds this bound fails deterministically instead of blocking forever.
+    acquire-timeout-ms: 5000
+    # SQLite busy_timeout applied per connection, in milliseconds.
+    busy-timeout-ms: 5000
+
+boot:
+  # Emit high-resolution timestamped diagnostics for each boot stage.
+  verbose: true
+
+# ==========================================================================
+# Background maintenance.
+# --------------------------------------------------------------------------
+# The maintenance task periodically evicts stale in-memory sessions, sweeps
+# expired behavioural records, and reconciles concealment so that a lapsed
+# ghost or shadow becomes visible again without a rejoin.
+# ==========================================================================
+maintenance:
+  # Sweep interval in seconds.
+  interval: 30
+  # Grace period, in seconds, for which a disconnected player's fingerprint
+  # session is retained so that a sanction issued shortly after disconnect can
+  # still capture their signals.
+  session-grace: 300
+
+# ==========================================================================
+# Escalation policy.
+# --------------------------------------------------------------------------
+# Governs how an active probation window (opened by @probation(<d>)) aggravates
+# a repeat offence under the same rule or joinder chain. In STEP mode the
+# escalation ladder advances by one extra rung; in MULTIPLIER mode the computed
+# duration is scaled by 'probation-multiplier'.
+# ==========================================================================
+escalation:
+  probation-mode: STEP
+  probation-multiplier: 2.0
+
+rules:
+  # Rule registry file, resolved relative to the plugin data folder.
+  file: rules.yml
+
+layouts:
+  # Layout registry file, resolved relative to the plugin data folder.
+  file: layouts.yml
+
+# ==========================================================================
+# Annotation relationship matrix.
+# --------------------------------------------------------------------------
+# Names are given without the '@' sigil. 'implies' expands one annotation into
+# others transitively. 'requires' mandates the presence of companions. Each
+# 'conflicts' entry is an unordered pair that may not co-occur. References to
+# unknown annotation names are reported and ignored.
+# ==========================================================================
+annotations:
+
+  implies:
+    shadow: [silent]
+
+  requires:
+    backdate: [evidence]
+
+  conflicts: []
+
+# ==========================================================================
+# Fingerprint / ban-evasion detection.
+# --------------------------------------------------------------------------
+# Rich signals are recorded for connection-blocking sanctions. On login a
+# probe of the incoming connection is scored against those recorded signals;
+# a match whose summed weight reaches 'threshold' raises an evasion alert.
+# Weights are the scoring contribution of each signal type and are stored with
+# each captured signal, so a weight change affects only future captures.
+# ==========================================================================
+fingerprint:
+  # Master switch. When false, no signals are captured and no login is scored.
+  enabled: true
+
+  # Aggregate weight at or above which a login is flagged as probable evasion.
+  threshold: 0.7
+
+  weights:
+    ip-full: 0.5
+    ip-subnet: 0.2
+    locale: 0.1
+    client-brand: 0.15
+    name-pattern: 0.1
+
+  # ------------------------------------------------------------------------
+  # Reverse-DNS derivation. When enabled, the PTR record of a connecting
+  # address is resolved (off the main thread only) and reduced to a digit-
+  # normalised host pattern, clustering hosts of the same provider. Disabled
+  # by default because it incurs a name lookup per fresh connection.
+  # ------------------------------------------------------------------------
+  reverse-dns: false
+
+  # ------------------------------------------------------------------------
+  # Bayesian evidence model. Scores combine per-signal log-likelihood-ratio
+  # weights in bits into a calibrated posterior probability of shared identity.
+  #   prior-evasion-rate : base rate of evasion; small values are conservative.
+  #   shrinkage-z        : standard deviations of downward shift applied to each
+  #                        reliability estimate before use.
+  #   weight-cap-bits    : bound on the evidence any single signal may add.
+  #   flag-threshold     : posterior probability at which a login is flagged.
+  # ------------------------------------------------------------------------
+  evidence:
+    prior-evasion-rate: 0.001
+    shrinkage-z: 0.8
+    weight-cap-bits: 12.0
+    flag-threshold: 0.90
+
+  # ------------------------------------------------------------------------
+  # Network classification. Longest-prefix CIDR catalogue labelling addresses
+  # with a provider or autonomous-system name and a datacenter/VPN flag. A
+  # datacenter label is shared by many accounts and therefore carries low
+  # evidential weight automatically through the frequency model.
+  # ------------------------------------------------------------------------
+  network:
+    entries: []
+    # Example:
+    # - { cidr: "203.0.113.0/24", asn: "EXAMPLE-VPN", datacenter: true }
+    # - { cidr: "198.51.100.0/24", asn: "EXAMPLE-ISP", datacenter: false }
+
+  # ------------------------------------------------------------------------
+  # Session-correlation heuristic. A bounded behavioural log-odds adjustment
+  # from temporal activity: handoffs raise, simultaneous presence lowers, and
+  # active-hour similarity weakly raises the score. Every term is capped, and
+  # the total is clamped, so behaviour cannot override field evidence.
+  # ------------------------------------------------------------------------
+  correlation:
+    handoff-gap-millis: 120000
+    handoff-bits: 0.75
+    handoff-cap: 8
+    overlap-bits: 1.0
+    overlap-cap: 6
+    hours-bits: 0.5
+    hours-center: 0.6
+    total-cap-bits: 6.0
+    interval-limit: 200
+
+  # ------------------------------------------------------------------------
+  # Account clustering. Hard links (rare shared values) union accounts
+  # unconditionally; soft links (common shared values) accumulate weighted
+  # evidence and merge only above a threshold; ubiquitous values are discarded.
+  # ------------------------------------------------------------------------
+  clustering:
+    hard-max-bearers: 3
+    soft-max-bearers: 12
+    soft-merge-bits: 8.0
+    hard-eligible: [ip-full, name-pattern]
+
+# ==========================================================================
+# Behavioural enforcement.
+# --------------------------------------------------------------------------
+# Governs the mechanisms behind non-connection measures (MUTE, QUARANTINE) and
+# the behavioural annotations (@shadow, @ghost, @rubberband, @remand). A muted
+# player cannot use chat or the listed commands. A quarantined player is
+# confined within 'radius' blocks of the anchor. A rubberbanded player has any
+# per-move displacement beyond 'leash' blocks rolled back.
+# ==========================================================================
+behaviour:
+  quarantine:
+    # World name of the confinement anchor. When absent at runtime the primary
+    # world is used and a warning is logged.
+    world: world
+    x: 0.5
+    y: 100.0
+    z: 0.5
+    # Confinement radius in blocks, measured from the anchor on the horizontal
+    # plane and vertically.
+    radius: 16.0
+
+  mute:
+    # Command roots blocked while muted, in addition to chat. Compared against
+    # the leading token of a command with the leading slash removed.
+    blocked-commands: [msg, tell, w, me, say, r, reply, whisper]
+
+  rubberband:
+    # Maximum permitted per-move displacement in blocks before the movement is
+    # reverted to its origin.
+    leash: 3.0
+
+# ==========================================================================
+# Notification routing.
+# --------------------------------------------------------------------------
+# The @notify(<channel>...) annotation delivers a sanction summary to the named
+# channels. Each channel has a type: STAFF broadcasts in-game to holders of a
+# permission; CONSOLE writes to the server console; LOG writes to the plugin
+# logger; WEBHOOK posts plain text to an HTTP endpoint. A @notify naming an
+# undefined channel is reported once and skipped rather than failing.
+# ==========================================================================
+notify:
+  # Channels used when a caller requests notification without naming channels.
+  # Reserved for policy-driven notification; explicit @notify channels override.
+  default-channels: [staff]
+
+  channels:
+    staff:
+      type: STAFF
+      permission: minutiae.notify.staff
+    console:
+      type: CONSOLE
+    audit:
+      type: LOG
+    # discord:
+    #   type: WEBHOOK
+    #   url: "https://discord.com/api/webhooks/xxxxx/yyyyy"
+
+# ==========================================================================
+# Automaton language (ALAM) safety posture.
+# --------------------------------------------------------------------------
+# Definitions in <data>/alam/*.alam bind rules to atomic events. A rule fires
+# only when its guard passes and its automaton has not saturated the throttle.
+# An automaton that is not armed evaluates in forced dry-run: it resolves and
+# reports but applies no effect. Automation is bounded by the system actor's
+# permission set and can never exceed a manual command.
+# ==========================================================================
+alam:
+  # Arm every automaton for live effect. Leave false and arm individually.
+  armed: false
+  # Individually armed automaton names.
+  armed-automata: []
+  throttle:
+    # Maximum firings per automaton per minute before it self-mutes.
+    per-minute: 30
+  system:
+    # Staff-attribution name recorded on automatically issued sanctions.
+    name: SYSTEM
+    # Grant every permission. Reserved for trusted deployments.
+    allow-all: false
+    # Explicit permission grant bounding what automation may do.
+    permissions:
+      - minutiae.command.enforce
+      - minutiae.annotation.as
+      - minutiae.annotation.measure
+      - minutiae.annotation.count
+      - minutiae.annotation.evidence
+      - minutiae.annotation.escalate
+      - minutiae.annotation.notify
+      - minutiae.annotation.silent
+      - minutiae.annotation.shadow
+      - minutiae.commute.mitigate
+
+# ==========================================================================
+# Web management panel (Hive).
+# --------------------------------------------------------------------------
+# A registry-style navigator over a read-only projection of the authoritative
+# store. Disabled by default and bound to loopback. Access is gated by opaque
+# tokens mapped to a role: 'read' navigates; 'write' additionally performs
+# actions (lift, appeal accept/deny), which route through the same engine and
+# audit as a manual command. Change the tokens before enabling.
+# ==========================================================================
+web:
+  enabled: true
+  bind: 127.0.0.1
+  port: 8787
+  tokens:
+    - token: "change-me-read"
+      role: read
+    - token: "change-me-write"
+      role: write
+
+# ==========================================================================
+# Chat transcript capture.
+# --------------------------------------------------------------------------
+# A bounded ring of recent chat lines is retained per player and a snapshot is
+# persisted with a sanction when requested. Every value below caps memory and
+# neutralises abuse: 'per-player' bounds ring depth, 'max-message-length'
+# truncates each stored line, 'max-tracked' bounds the number of players held in
+# memory, and 'retention-grace' bounds how long a departed player's ring is kept.
+# Mode ANNOTATION captures only for a sanction carrying @transcript; mode ALWAYS
+# additionally captures for connection-blocking and behavioural sanctions.
+# ==========================================================================
+chat-history:
+  enabled: true
+  mode: ANNOTATION
+  per-player: 50
+  max-message-length: 256
+  max-tracked: 512
+  retention-grace: 900

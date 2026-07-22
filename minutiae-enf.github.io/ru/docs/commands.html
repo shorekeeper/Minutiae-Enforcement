@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="ru" data-slug="docs/commands">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Команды - Minutiae Enforcement</title>
+    <meta name="description" content="Полный справочник /enforce, /appeal и диагностических команд.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Документация"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Команды</h1>
+            <p class="lede">Справочник грамматики выдачи санкций, семейства
+                снятия, апелляций и диагностики. Узлы прав перечислены по
+                формам; бандлы — на странице
+                <a href="permissions.html">Права</a>.</p>
+
+            <h2 id="enforce-spec">Выдача санкций</h2>
+            <pre><code>/enforce &lt;игрок&gt; [::шаблон] [@аннотация...] [ключ=значение...]</code></pre>
+            <p>Требует <code>minutiae.command.enforce</code>. Спецификация —
+                поток токенов в свободном порядке; каждый токен относится к
+                одному из четырёх видов:</p>
+            <table class="items">
+                <tr><td>::key</td>
+                    <td>Выбирает настроенный
+                        <a href="layouts.html">шаблон</a>, который поставляет
+                        правило, меру, срок, лестницу эскалации и аннотации по
+                        умолчанию. Не более одного на команду.</td></tr>
+                <tr><td>@name(...)</td>
+                    <td><a href="annotations.html">Аннотация</a>: поведенческий
+                        флаг или директива. Параметры — в скобках;
+                        <code>!@name</code> убирает аннотацию, пришедшую из
+                        шаблона.</td></tr>
+                <tr><td>key=value</td>
+                    <td>Скалярное переопределение. Распознаются
+                        <code>duration</code> и <code>reason</code>. Значения с
+                        пробелами берите в кавычки:
+                        <code>reason="два слова"</code>.</td></tr>
+                <tr><td>всё остальное</td>
+                    <td>Игрок-цель. Требуется ровно один.</td></tr>
+            </table>
+
+            <div class="callout note"><span class="label">Примечание</span>
+                <p>Санкции нужна мера ровно из одного источника: шаблон,
+                    <code>@measure(...)</code> или <code>@remand</code>. Мера
+                    шаблона меняется через <code>@commute(...)</code>, никогда
+                    через <code>@measure</code>.</p>
+            </div>
+
+            <h3 id="enforce-examples">Примеры</h3>
+            <pre><code># Шаблон с его правилом, сроком и эскалацией:
+/enforce Steve ::griefing
+
+# Ручная санкция; временные меры требуют срок:
+/enforce Steve @measure(MUTE) duration=3h reason="Флуд в чате"
+
+# Смягчить меру шаблона, добавив пункт правил:
+/enforce Steve ::cheating @commute(SUSPENSION) duration=30d @count(P.4.1)
+
+# Просмотр без какого-либо применения:
+/enforce Steve ::toxic @dry-run</code></pre>
+
+            <h2 id="lift">Снятие санкций</h2>
+            <pre><code>/enforce lift &lt;id&gt; [vacate|pardon|served] [@аннотация...] [причина...]</code></pre>
+            <p>Требует <code>minutiae.command.lift</code>. Вид решает, что
+                снятая запись продолжает означать; полная модель — на странице
+                <a href="lift.html">Снятие санкций</a>.</p>
+            <table class="items">
+                <tr><td>vacate</td>
+                    <td>Санкция выдана ошибочно. Запись полностью выходит из
+                        прецедента. Значение по умолчанию, когда вид не
+                        указан.</td></tr>
+                <tr><td>pardon</td>
+                    <td>Выдана правомерно, отменена как снисхождение.
+                        Прецедент сохраняется. Требует
+                        <code>minutiae.lift.pardon</code>.</td></tr>
+                <tr><td>served</td>
+                    <td>Досрочно завершена как отбытая. Прецедент сохраняется.
+                        Требует <code>minutiae.lift.served</code>.</td></tr>
+            </table>
+            <p>Простые токены после вида образуют причину. Допустимые
+                аннотации:</p>
+            <table class="items">
+                <tr><td>@silent</td><td>Подавить публичное объявление о снятии.</td></tr>
+                <tr><td>@dry-run</td><td>Просмотр, включая объём каскада.</td></tr>
+                <tr><td>@note(текст)</td><td>Прикрепить внутреннюю заметку по делу.</td></tr>
+                <tr><td>@notify(канал...)</td><td>Направить уведомление о снятии в каналы.</td></tr>
+                <tr><td>@probation(1w)</td>
+                    <td>Открыть окно пробации на снятой записи. Несовместимо с
+                        vacate, чья запись выходит из прецедента.</td></tr>
+                <tr><td>@cascade</td>
+                    <td>Распространить снятие на всю цепочку дел. Требует
+                        <code>minutiae.lift.cascade</code>.</td></tr>
+            </table>
+
+            <div class="callout warn"><span class="label">Права</span>
+                <p>Две проверки зависят от цели: снятие санкции другого
+                    модератора требует <code>minutiae.lift.foreign</code>, а
+                    снятие бана — <code>minutiae.lift.blocking</code>. Обе
+                    действуют на каждом пути входа, включая принятие
+                    апелляции.</p>
+            </div>
+
+            <h3 id="unlift">Откат снятия</h3>
+            <pre><code>/enforce unlift &lt;id&gt; [причина...]</code></pre>
+            <p>Требует <code>minutiae.lift.reinstate</code>. Восстанавливает
+                снятую санкцию: неистёкший бан удаляет игрока с сервера, а
+                поведенческие ограничения применяются сразу.</p>
+
+            <h3 id="liftall">Массовое снятие</h3>
+            <pre><code>/enforce liftall rule &lt;id&gt; [confirm [причина...]]
+/enforce liftall staff &lt;имя&gt; [confirm [причина...]]</code></pre>
+            <p>Требует <code>minutiae.lift.bulk</code>. Без
+                <code>confirm</code> команда лишь сообщает, сколько санкций
+                подпадает. Массовые снятия всегда являются аннулированием.</p>
+
+            <h2 id="inspection">Просмотр</h2>
+            <table class="items">
+                <tr><td>/enforce info &lt;id&gt;</td>
+                    <td>Полный вид одной санкции: статус, вид снятия,
+                        оставшийся срок, выдавший.</td></tr>
+                <tr><td>/enforce docket &lt;игрок&gt; [страница]</td>
+                    <td>Полная история санкций игрока.</td></tr>
+                <tr><td>/enforce appeals [страница]</td>
+                    <td>Апелляции, ожидающие разбора.</td></tr>
+                <tr><td>/enforce appeal &lt;id&gt; accept|deny [причина]</td>
+                    <td>Решить апелляцию. Принятие аннулирует санкцию.</td></tr>
+            </table>
+
+            <h2 id="appeal">Апелляции игроков</h2>
+            <pre><code>/appeal &lt;id-санкции&gt; &lt;текст&gt;</code></pre>
+            <p>Доступна каждому игроку по умолчанию. Санкцию можно обжаловать
+                один раз, пока апелляция в ожидании; идентификаторы
+                автодополняются из недавних санкций самого игрока.</p>
+
+            <h2 id="diagnostics">Диагностика</h2>
+            <p><code>/me-ban</code> открывает состояние подсистем:
+                <code>ping</code> (проба хранилища), <code>rules</code>,
+                <code>layouts</code>, <code>annotations</code>,
+                <code>fingerprint &lt;игрок&gt;</code>,
+                <code>verbose on|off</code> и <code>reload</code>. Каждая
+                подкоманда несёт собственный узел под
+                <code>minutiae.command.*</code>.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Документация</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="На этой странице"></aside>
+</div>
+</body>
+</html>

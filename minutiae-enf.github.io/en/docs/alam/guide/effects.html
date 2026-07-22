@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/guide/effects">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALAM effects - Minutiae Enforcement</title>
+    <meta name="description" content="The ALAM pure and query effects and the effect allowance of each expression position.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Effects</h1>
+            <p class="lede">ALAM separates deterministic value construction from read-only access to the live enforcement environment through a two-point effect system.</p>
+
+            <h2 id="lattice">Effect order</h2>
+            <pre class="gram"><code>pure &lt; query</code></pre>
+            <table class="items">
+                <tr>
+                    <td><span class="eff pure">pure</span></td>
+                    <td>Arithmetic, comparison, matching, construction, field access, compile-time transformation, and calls to pure functions.</td>
+                </tr>
+                <tr>
+                    <td><span class="eff query">query</span></td>
+                    <td>Everything permitted by pure, plus calls that read the current enforcement environment.</td>
+                </tr>
+            </table>
+            <p>An operation of effect <code>E</code> may be called only where the position grants an allowance <code>A</code> and <code>E &lt;= A</code>.</p>
+
+            <h2 id="positions">Position allowances</h2>
+            <table>
+                <tr><th>Position</th><th>Allowance</th></tr>
+                <tr><td><code>const</code> initializer</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td><code>matrix</code> cell</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td><code>transform</code> body</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td><code>expand</code> argument</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td><code>where</code> constraint</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td>Trigger expression</td><td><span class="eff pure">pure</span></td></tr>
+                <tr><td>Guard body</td><td><span class="eff query">query</span></td></tr>
+                <tr><td>Sequence step guard body</td><td><span class="eff query">query</span></td></tr>
+                <tr><td>Verdict body</td><td><span class="eff pure">pure</span></td></tr>
+            </table>
+
+            <h2 id="functions">Function effects</h2>
+            <p>A function type carries the effect granted to its body. Function assignability is contravariant in parameters, covariant in the result, and monotonic in effect. A pure function may be used where a query-capable function is accepted, but a query-capable function cannot be placed in a pure function position.</p>
+
+            <h2 id="builtins">Query built-ins</h2>
+            <table class="items">
+                <tr><td><code>precedent</code></td><td>Reads a cached prior-sanction count.</td></tr>
+                <tr><td><code>fingerprint_score</code></td><td>Reads a cached evasion score.</td></tr>
+                <tr><td><code>is_online</code></td><td>Reads live online presence.</td></tr>
+                <tr><td><code>now</code></td><td>Reads the current epoch-millisecond timestamp.</td></tr>
+            </table>
+            <p>All four are <code>query</code>. None performs blocking storage I/O directly. Cache misses for storage-backed values return a neutral value and schedule an asynchronous fill.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Login&gt; repeat_evasion {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            fingerprint_score(event.subject) &gt;= 0.90
+            &amp;&amp; precedent(event.subject, P.5.1) &gt; 0;
+    }
+    =&gt; verdict = evasion_verdict&lt;Measure::CUSTODY&gt;;
+}</code></pre>
+            <p>The guard may call <code>fingerprint_score</code> and <code>precedent</code> because its body is elaborated under <code>query</code>. Calling either from a verdict or constant initializer produces <code>E007</code>.</p>
+
+            <h2 id="failure">Runtime failure posture</h2>
+            <p>A runtime query or expression failure does not escape into a platform event handler. A guard failure is treated as an unsatisfied guard. A verdict failure suppresses the firing and writes an English operator diagnostic.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,334 @@
+# ==========================================================================
+# Minutiae Enforcement - English message bundle (default).
+# --------------------------------------------------------------------------
+# Format: legacy ampersand colours with &#rrggbb hex. Placeholders are {name}.
+# The {prefix} token is injected automatically from the 'prefix' entry.
+# A list value is joined with newlines into one multi-line message.
+# ==========================================================================
+
+# ==========================================================================
+# SYSTEM & FORMATTING
+# ==========================================================================
+
+prefix: "&#8AFFEB&lME &8» &r"
+
+reload:
+  done: "{prefix}&#79FFB0Reload complete &8· &#E8EEF0{ok}&#7C93A0 ok, &#E8EEF0{failed}&#7C93A0 failed"
+
+pref:
+  verbose-on: "{prefix}&#79FFB0Verbose reports enabled"
+  verbose-off: "{prefix}&#7C93A0Verbose reports disabled"
+  console: "{prefix}&#7C93A0Console always receives verbose reports"
+
+rank:
+  staff: "&#7C93A0Staff"
+  console: "&#7C93A0Console"
+  administrator: "&#FF7A7AAdministrator"
+  moderator: "&#8AFFEBModerator"
+  helper: "&#79FFB0Helper"
+
+status:
+  active: "active"
+  inactive: "inactive"
+  stayed: "stayed (pending)"
+  lifted: "lifted by {actor} ({kind})"
+
+duration:
+  permanent: "permanent"
+  expired: "expired"
+  none: "-"
+  unit:
+    weeks: "w"
+    days: "d"
+    hours: "h"
+    minutes: "m"
+    seconds: "s"
+
+measure:
+  warn: "Warning"
+  censure: "Censure"
+  mute: "Mute"
+  kick: "Kick"
+  quarantine: "Quarantine"
+  suspension: "Suspension"
+  custody: "Custody"
+
+# ==========================================================================
+# SANCTIONS & ENFORCEMENT COMMANDS
+# ==========================================================================
+
+enforce:
+  help:
+    - "&#8AFFEB&l  Minutiae Enforcement"
+    - "&8  ───────────────────────────────"
+    - "&#7C93A0  /enforce &#E8EEF0<player> &#8AFFEB::<layout> &#7C93A0[modifiers]"
+    - "&#7C93A0  /enforce &#E8EEF0<player> &#8AFFEB@measure(M) &#7C93A0duration=<d>"
+    - "&#7C93A0  /enforce &#8AFFEBlift &#E8EEF0<id> &#7C93A0[reason]"
+    - "&#7C93A0  /enforce &#8AFFEBinfo &#E8EEF0<id>"
+    - "&#7C93A0  /enforce &#8AFFEBdocket &#E8EEF0<player>"
+    - "&#7C93A0  /enforce &#8AFFEBappeals&7 · &#8AFFEBappeal &#E8EEF0<id> accept|deny"
+    - "&8  ─── Modifiers ───"
+    - "&#7C93A0  @flag  !@flag  key=value"
+    - "&#7C93A0  @commute(M)  &8Change a layout's measure"
+    - "&#7C93A0  @count(P.X)  &8Cite an additional rule"
+    - "&#7C93A0  @weave(#id)  &8Join under an existing case"
+    - "&#7C93A0  @amend(id)   &8Modify a past sanction"
+    - "&#7C93A0  @probation(d)&8 Open a probation window"
+    - "&#7C93A0  @stay(d) @remand @dry-run"
+    - "&8  Measures &7 {measures}"
+    - "&8  Layouts  &7 {layouts}"
+
+sanction:
+  applied: "{prefix}&#79FFB0&lSanction Applied"
+  stayed: "{prefix}&#FFC061&lSanction Stayed"
+  warning: "{prefix}&#FFC061&lFormal Warning Issued"
+  amended: "{prefix}&#79FFB0Sanction &#E8EEF0#{id} &#79FFB0amended &8· &#8AA6B0{diff}"
+  suspended: "{prefix}&#FFC061&lSuspended Sentence Recorded"
+  dry-run: "{prefix}&#FFD479&lDry-Run &8· &#7C93A0resolved, not applied"
+  dry-run-footer: "&8  Nothing was persisted"
+  compact: "{prefix}&#79FFB0✔ &#E8EEF0{target} &8→ &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+  layout-manual: "<manual>"
+  flag-implied: "@{name}(implied)"
+  line:
+    target: "&#7C93A0  Target    &#E8EEF0{target}"
+    measure: "&#7C93A0  Measure   &#8AFFEB{measure}"
+    layout: "&#7C93A0  Layout    &#B8C6CE{layout}"
+    rule: "&#7C93A0  Rule      &#B8C6CE{rule}"
+    reason: "&#7C93A0  Reason    {reason}"
+    duration: "&#7C93A0  Duration  &#FFD479{duration}"
+    duration-escalated: "&#7C93A0  Duration  &#FFD479{duration} &8(escalated · prior {prior})"
+    warning: "&#7C93A0  Warning   &#FFC061{count}&7/&#FFC061{required}"
+    stay: "&#7C93A0  Stay      &#FFD479{stay}"
+    flags: "&#7C93A0  Flags     &#8AA6B0{flags}"
+    id: "&8  ID        #{id}"
+    stays-activated: "&#8AFFEB  ↑ Activated {count} stayed sanction(s)"
+    suspended-activated: "&#8AFFEB  ↑ Activated {count} suspended sentence(s)"
+
+reason:
+  display: "&#FFD479{short}"
+  card:
+    - "&#8AFFEB&lSanction Details"
+    - "&8─────────────────"
+    - "&#7C93A0Reason    &#E8EEF0{reason}"
+    - "&#7C93A0Measure   &#8AFFEB{measure}"
+    - "&#7C93A0Rule      &#B8C6CE{rule}"
+    - "&#7C93A0Duration  &#FFD479{duration}"
+    - "&#7C93A0Staff     &#E8EEF0{staff}"
+    - "&#7C93A0When      &#8AA6B0{when}"
+
+info:
+  header: "{prefix}&#8AFFEB&lSanction #{id}"
+  status: "&#7C93A0  Status    &#E8EEF0{status}"
+  staff: "&#7C93A0  Staff     &#E8EEF0{staff}"
+
+docket:
+  header: "{prefix}&#8AFFEB&lDocket &8· &#E8EEF0{player} &#7C93A0({total} total · page {page}/{pages})"
+  empty: "&#7C93A0  No sanctions on record"
+  entry: "&8  #{id} &#8AFFEB{measure} &#B8C6CE{rule} &8[{status}] &8· {reason}"
+  woven: "&8      ↳ Woven under case #{parent}"
+  unknown: "{prefix}&#FF7A7AUnknown or uncached player &8· &#E8EEF0{player}"
+
+# ==========================================================================
+# LIFTING & REINSTATING
+# ==========================================================================
+
+lift:
+  success: "{prefix}&#79FFB0Lifted &#E8EEF0#{id} &8({kind}) &8· &#E8EEF0{target} &#8AFFEB{measure} &8by &#E8EEF0{actor}"
+  not-found: "{prefix}&#FF7A7ANo sanction with ID &#E8EEF0#{id}"
+  already: "{prefix}&#7C93A0Sanction &#E8EEF0#{id}&#7C93A0 is already lifted"
+  broadcast: "{prefix}&#E8EEF0{target}&#7C93A0's {measure} was lifted &8({kind}) &#7C93A0by {rank} &#E8EEF0{staff}"
+  deny-kind: "{prefix}&#FF7A7ALift Denied &8· &#C9D6DBInsufficient permission for kind '{kind}'"
+  deny-foreign: "{prefix}&#FF7A7ALift Denied &8· &#C9D6DBSanction was issued by {staff}"
+  deny-blocking: "{prefix}&#FF7A7ALift Denied &8· &#C9D6DBInsufficient permission to lift a {measure}"
+  unknown-token: "{prefix}&#FF7A7ALift Error &8· &#C9D6DB@{name} is not admissible on a lift"
+  probation-vacate: "{prefix}&#FF7A7ALift Error &8· &#C9D6DB@probation requires pardon or served; a vacated record leaves precedent"
+  preview: "{prefix}&#FFD479&lDry-Run &8· &#7C93A0would lift &#E8EEF0#{id} &#E8EEF0{target} &#8AFFEB{measure} &8({kind})"
+  preview-cascade: "&#7C93A0  Cascade would additionally lift &#E8EEF0{count}&#7C93A0 woven case(s)"
+  cascade-done: "{prefix}&#79FFB0Chain lifted &8· &#E8EEF0{count}&#79FFB0 sanction(s) total"
+  bulk-preview: "{prefix}&#FFC061{count} sanction(s) match '{value}' &8· append &#E8EEF0confirm&8 to execute"
+  bulk-empty: "{prefix}&#7C93A0Nothing to lift for '{value}'"
+  bulk-done: "{prefix}&#79FFB0Bulk lift complete &8· &#E8EEF0{count}&#79FFB0 sanction(s) vacated for '{value}'"
+  kind:
+    vacate: "vacated"
+    pardon: "pardoned"
+    time-served: "time served"
+
+unlift:
+  success: "{prefix}&#79FFB0Reinstated &#E8EEF0#{id} &8· &#E8EEF0{target}"
+  not-lifted: "{prefix}&#7C93A0Sanction &#E8EEF0#{id}&#7C93A0 is not lifted"
+
+# ==========================================================================
+# APPEALS SYSTEM
+# ==========================================================================
+
+appeal:
+  player-only: "{prefix}&#FF7A7AOnly a player may submit an appeal."
+  not-yours: "{prefix}&#FF7A7AThat sanction is not yours to appeal."
+  not-appealable: "{prefix}&#FF7A7AThat sanction cannot be appealed."
+  already-lifted: "{prefix}&#7C93A0That sanction has already been lifted."
+  duplicate: "{prefix}&#FFC061An appeal for sanction &#E8EEF0#{id}&#FFC061 is already pending."
+  submitted: "{prefix}&#79FFB0Appeal &#E8EEF0#{appeal}&#79FFB0 submitted against sanction &#E8EEF0#{id}&#79FFB0."
+  not-found: "{prefix}&#FF7A7ANo appeal with ID &#E8EEF0#{id}"
+  already-decided: "{prefix}&#7C93A0Appeal &#E8EEF0#{id}&#7C93A0 has already been decided."
+  accepted: "{prefix}&#79FFB0Appeal &#E8EEF0#{id}&#79FFB0 accepted &8· sanction lifted"
+  denied: "{prefix}&#7C93A0Appeal &#E8EEF0#{id}&#7C93A0 denied"
+  lift-reason: "appeal accepted"
+  status:
+    accepted: "accepted"
+    denied: "denied"
+
+appeals:
+  header: "{prefix}&#8AFFEB&lPending Appeals &#7C93A0({total} total · page {page}/{pages})"
+  empty: "&#7C93A0  No appeals awaiting review"
+  entry: "&8  #{appeal} &#7C93A0ban #{id} &#E8EEF0{appellant} &8· &#8AA6B0{text}"
+
+# ==========================================================================
+# CLIENT EFFECTS & RESTRICTIONS
+# ==========================================================================
+
+mechanism:
+  warn: "&#8AFFEB&l[Enforcement] &r&#E8EEF0{reason}"
+  kick: "&#FF7A7A{reason}"
+
+access:
+  banned:
+    - "&#FF7A7A&lYOU ARE SANCTIONED"
+    - ""
+    - "&#E8EEF0{reason}"
+    - ""
+    - "&#7C93A0Measure &8· &#8AFFEB{measure}"
+
+behaviour:
+  muted: "{prefix}&#FF7A7AYou are muted and cannot speak."
+  quarantine:
+    applied: "{prefix}&#FFC061You are confined to quarantine."
+    boundary: "{prefix}&#7C93A0You cannot leave the quarantine area."
+  lifted: "{prefix}&#79FFB0A sanction against you has been lifted."
+
+# ==========================================================================
+# NOTIFICATIONS & BROADCASTS
+# ==========================================================================
+
+broadcast:
+  sanction: "{prefix}&#E8EEF0{target} &#7C93A0was sanctioned by {rank} &#E8EEF0{staff} &8· &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+
+notify:
+  lift: "{prefix}&#8AFFEB[Notify] {rank} &#E8EEF0{staff} &#7C93A0lifted &#E8EEF0#{id} &8({kind}) &#7C93A0on &#E8EEF0{target} &8· &#8AFFEB{measure}"
+  summary: "{prefix}&#8AFFEB[Notify] {rank} &#E8EEF0{staff} &#8AFFEB{measure} &#7C93A0on &#E8EEF0{target} &8({rule}) &#FFD479{duration} &8· {reason}"
+  appeal: "{prefix}&#8AFFEB[Appeal] &#E8EEF0{player} &#7C93A0appealed sanction &#E8EEF0#{id} &8(appeal #{appeal}) &8· &#8AA6B0{text}"
+  appeal-decision: "{prefix}&#8AFFEB[Appeal] &#7C93A0Appeal &#E8EEF0#{appeal} &8(sanction #{id}) &#7C93A0was {verdict} by &#E8EEF0{reviewer}"
+  review: "{prefix}&#8AFFEB[Review] &#7C93A0Sanction &#E8EEF0#{id} &8({measure} by {staff}) &#7C93A0is due for review"
+  unlift: "{prefix}&#8AFFEB[Notify] &#E8EEF0{staff} &#7C93A0reinstated &#E8EEF0#{id} &#7C93A0on &#E8EEF0{target}"
+  bulk-lift: "{prefix}&#8AFFEB[Notify] &#E8EEF0{staff} &#7C93A0bulk-vacated &#E8EEF0{count}&#7C93A0 sanction(s) for '&#E8EEF0{value}&#7C93A0'"
+  dispatch: "{prefix}&#8AFFEB[Automaton] &#8AFFEB{automaton}&8.&#E8EEF0{rule} &#7C93A0fired on &#B8C6CE{event} &8· &#E8EEF0{subject}"
+
+# ==========================================================================
+# VALIDATION & SYSTEM ERRORS
+# ==========================================================================
+
+error:
+  parse: "{prefix}&#FF7A7AParse Error &8· &#C9D6DB{error}"
+  resolve: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB{error}"
+  enforce-failed: "{prefix}&#FF7A7AEnforcement Failed &8· &#C9D6DB{error}"
+  command: "{prefix}&#FF7A7ACommand Error &8· &#C9D6DB{error}"
+  weave-parent-not-found: "{prefix}&#FF7A7AEnforcement Failed &8· &#C9D6DBWeave parent #{id} not found"
+
+parse:
+  unterminated-quote: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBUnterminated quote"
+  unbalanced-close: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBUnbalanced ')' at offset {offset}"
+  unclosed-open: "{prefix}&#FF7A7AParse Error &8· &#C9D6DB{count} unclosed '('"
+  multiple-layouts: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBOnly one ::layout selector is permitted"
+  empty-layout: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBEmpty layout selector '::'"
+  malformed-annotation: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBMalformed annotation {token} &8({error})"
+  empty-override-key: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBOverride with empty key: {token}"
+  duplicate-override: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBDuplicate override '{key}'"
+  unexpected-token: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBUnexpected '{token}': target is already '{target}' &8(use key=\"value\" for overrides, e.g. reason=\"...\")"
+  no-target: "{prefix}&#FF7A7AParse Error &8· &#C9D6DBNo target player specified"
+
+resolve:
+  directive-negated: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBDirective @{name} cannot be negated"
+  duplicate-directive: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBDuplicate @{name}"
+  count-unknown-rule: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@count cites unknown rule {rule}"
+  waive-unknown: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@waive names unknown annotation @{name}"
+  unhandled-directive: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBUnhandled directive @{name}"
+  amend-conflict: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@amend cannot combine with {with}"
+  tariff-temporal: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@tariff applies only to temporal measures, not {measure}"
+  unknown-layout: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBUnknown layout ::{key}"
+  unknown-annotation: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBUnknown annotation @{name}"
+  no-permission: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBInsufficient permission for @{name}"
+  remand-standalone: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@remand is a standalone holding action and cannot combine with a measure"
+  measure-commute-exclusive: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@measure and @commute are mutually exclusive"
+  nothing-to-commute: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBNothing to commute: no layout measure present"
+  layout-has-measure: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBLayout defines a measure; use @commute to change it"
+  no-measure: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBNo measure: a manual sanction requires @measure(...) or @remand"
+  commute-mitigate: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBInsufficient permission to mitigate {from} to {to}"
+  commute-aggravate: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBInsufficient permission to aggravate {from} to {to}"
+  conflict: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBConflicting annotations @{left} and @{right}"
+  requires: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@{requirer} requires @{required} &8(waivable with @waive)"
+  unknown-override: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBUnknown override {key} &8(allowed: {allowed})"
+  instant-no-duration: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBMeasure {measure} is instantaneous and takes no duration"
+  invalid-duration: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBInvalid duration override: {error}"
+  measure-needs-duration: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DBMeasure {measure} requires a duration"
+  weave-format: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@weave expects a sanction ID (e.g. #42)"
+  weave-positive: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@weave ID must be positive"
+  suspend-stay: "{prefix}&#FF7A7AResolve Error &8· &#C9D6DB@suspended and @stay are mutually exclusive"
+
+# ==========================================================================
+# AUTOMATION & SECURITY
+# ==========================================================================
+
+fingerprint:
+  alert: "{prefix}&#FF7A7A[Fingerprint] &#FFC061{name} &#7C93A0may be evading a ban &8(score {score} · matches {banned})"
+  header: "{prefix}&#8AFFEB&lFingerprint &8· &#E8EEF0{name}"
+  no-session: "&#7C93A0  No session recorded"
+  line: "&#7C93A0  {label}  &#E8EEF0{value}"
+  no-match: "&#79FFB0  No evasion match"
+  match: "&#FFC061  Match &8· banned={banned} score={score} signals={signals}"
+  not-online: "{prefix}&#FF7A7APlayer not online &8· &#E8EEF0{name}"
+
+alam:
+  list:
+    header: "{prefix}&#8AFFEB&lAutomata &8· &#E8EEF0{count} rule(s)"
+    entry: "&8  &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· on &#B8C6CE{event} &8· {stages} stage(s)"
+  sim:
+    header: "{prefix}&#FFD479&lSimulate &8· &#B8C6CE{kind} &8· &#E8EEF0{subject}"
+    fire: "&#79FFB0  ✔ would fire &8· &#8AFFEB{automaton}&8.&#E8EEF0{rule}"
+    skip: "&#7C93A0  ✘ &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· {decision}"
+    empty: "&#7C93A0  no rule would fire"
+    unknown-kind: "{prefix}&#FF7A7AUnknown event kind &8· &#E8EEF0{kind}"
+
+# ==========================================================================
+# DIAGNOSTICS & CHECKS
+# ==========================================================================
+
+diag:
+  ping:
+    probing: "{prefix}&#7C93A0Probing storage backend…"
+    ok: "{prefix}&#79FFB0Storage OK &8· &#7C93A0latency &#E8EEF0{latency}ms &8· schema &#E8EEF0v{schema}"
+    unavailable: "{prefix}&#FF7A7AStorage UNAVAILABLE"
+  rules:
+    count: "{prefix}&#8AFFEBRules loaded &8· &#E8EEF0{count}"
+    entry: "{prefix}&#B8C6CE{id} &8· &#E8EEF0{description}"
+    undefined: "{prefix}&#FF7A7AUndefined rule &8· &#E8EEF0{id}"
+  layouts:
+    list: "{prefix}&#8AFFEBLayouts &8({count}) &8· &#E8EEF0{keys}"
+    unknown: "{prefix}&#FF7A7AUnknown layout &8· &#E8EEF0{key}"
+  layout:
+    header: "{prefix}&#8AFFEB&lLayout &8· &#E8EEF0::{key}"
+    measure: "&#7C93A0  Measure   &#8AFFEB{measure}"
+    rule: "&#7C93A0  Rule      &#B8C6CE{rule} &8({description})"
+    reason: "&#7C93A0  Reason    &#E8EEF0{reason}"
+    duration: "&#7C93A0  Duration  &#FFD479{duration}"
+    escalation: "&#7C93A0  Escalate  &#FFD479{ladder}"
+    flags: "&#7C93A0  Flags     &#8AA6B0{flags}"
+    reason-inherited: "<rule description>"
+  annotations:
+    list: "{prefix}&#8AFFEBAnnotations &8({count}) &8· &#E8EEF0{names}"
+  annotation:
+    unknown: "{prefix}&#FF7A7AUnknown annotation &8· &#E8EEF0@{name}"
+    header: "{prefix}&#8AFFEB&l@{name}"
+    scope: "&#7C93A0  Scope       &#E8EEF0{scope}"
+    permission: "&#7C93A0  Permission  &#8AA6B0{permission}"
+    implies: "&#7C93A0  Implies     &#E8EEF0{names}"
+    requires: "&#7C93A0  Requires    &#E8EEF0{names}"
+    conflicts: "&#7C93A0  Conflicts   &#E8EEF0{names}"

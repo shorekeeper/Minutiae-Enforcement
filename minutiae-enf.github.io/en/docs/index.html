@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/index">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Documentation - Minutiae Enforcement</title>
+    <meta name="description" content="Minutiae Enforcement documentation: setup, moderation, administration.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <article class="article-body">
+            <h1>Documentation</h1>
+            <p class="lede">Everything from first install to bulk amnesties.
+                If you are new, start with the two pages in the first row; the
+                rest are reference material you will return to.</p>
+
+            <div class="feature-grid">
+                <div class="feature">
+                    <h3><a href="getting-started.html">Getting started</a></h3>
+                    <p>Requirements, installation, first boot, and your first
+                        sanction in about five minutes.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="configuration.html">Configuration</a></h3>
+                    <p>Every section of <code>config.yml</code>: storage,
+                        broadcasts, ranks, notifications, chat capture.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="commands.html">Commands</a></h3>
+                    <p>The full <code>/enforce</code> grammar, the lift family,
+                        appeals, and diagnostics.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="annotations.html">Annotations reference</a></h3>
+                    <p>All 32 annotations: parameters, scope, permissions, and
+                        the relationship matrix.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="layouts.html">Layouts and escalation</a></h3>
+                    <p>Reusable sanction templates, inheritance, escalation
+                        ladders, and precedent decay.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="lift.html">Lifting sanctions</a></h3>
+                    <p>Vacate, pardon, and time served; cascades, bulk lifts,
+                        and reversing a mistaken lift.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="permissions.html">Permissions</a></h3>
+                    <p>The node tree, the staff and admin bundles, and how
+                        operator defaults actually work.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="localization.html">Localization</a></h3>
+                    <p>Language bundles, per-player locale, grammatical forms,
+                        and the embedded fallback layer.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="web-panel.html">Web panel</a></h3>
+                    <p>The registry-style case browser: tokens, roles, and what
+                        a write token can and cannot do.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="fingerprint.html">Evasion detection</a></h3>
+                    <p>How the evidence model scores logins, what the signals
+                        mean, and how to tune the thresholds.</p>
+                </div>
+            </div>
+
+            <h2 id="conventions">Conventions used in these docs</h2>
+            <table class="items">
+                <tr><td>&lt;angle&gt;</td>
+                    <td>A required argument you replace with a value.</td></tr>
+                <tr><td>[square]</td>
+                    <td>An optional argument.</td></tr>
+                <tr><td>a|b</td>
+                    <td>Mutually exclusive alternatives.</td></tr>
+                <tr><td>P.3.2</td>
+                    <td>A rule identifier from your <code>rules.yml</code>.
+                        Examples use the shipped default rule set.</td></tr>
+                <tr><td>1h, 7d, 1w2d</td>
+                    <td>Durations: seconds, minutes, hours, days, weeks;
+                        segments combine. <code>permanent</code> is a distinct
+                        literal, not a duration.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">Home</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

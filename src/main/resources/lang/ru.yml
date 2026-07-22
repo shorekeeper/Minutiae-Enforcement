@@ -1,0 +1,337 @@
+# ==========================================================================
+# Minutiae Enforcement - русский языковой пакет.
+# Формат: легаси-цвета '&' с hex &#rrggbb. Плейсхолдеры вида {name}.
+# Палитра идентична en.yml (primary #8AFFEB).
+# ==========================================================================
+
+# ==========================================================================
+# СИСТЕМА И ФОРМАТИРОВАНИЕ
+# ==========================================================================
+
+prefix: "&#8AFFEB&lME &8» &r"
+
+reload:
+  done: "{prefix}&#79FFB0Перезагрузка завершена &8· &#E8EEF0{ok}&#7C93A0 успешно, &#E8EEF0{failed}&#7C93A0 с ошибкой"
+
+pref:
+  verbose-on: "{prefix}&#79FFB0Подробные отчёты включены"
+  verbose-off: "{prefix}&#7C93A0Подробные отчёты выключены"
+  console: "{prefix}&#7C93A0Консоль всегда получает подробные отчёты"
+
+rank:
+  staff: "&#7C93A0Персонал"
+  staff.by: "&#7C93A0персонала"
+  console: "&#7C93A0Консоль"
+  console.by: "&#7C93A0консоли"
+  administrator: "&#FF7A7AАдминистратор"
+  administrator.by: "&#FF7A7Aадминистратора"
+  moderator: "&#8AFFEBМодератор"
+  moderator.by: "&#8AFFEBмодератора"
+  helper: "&#79FFB0Хелпер"
+  helper.by: "&#79FFB0хелпера"
+
+status:
+  active: "активна"
+  inactive: "неактивна"
+  stayed: "отложена (ожидает)"
+  lifted: "снята: {actor} ({kind})"
+
+duration:
+  permanent: "навсегда"
+  expired: "истекла"
+  none: "-"
+  unit:
+    weeks: "нед"
+    days: "д"
+    hours: "ч"
+    minutes: "м"
+    seconds: "с"
+
+measure:
+  warn: "Предупреждение"
+  censure: "Порицание"
+  mute: "Мут"
+  kick: "Кик"
+  quarantine: "Карантин"
+  suspension: "Временный бан"
+  custody: "Перманентный бан"
+
+# ==========================================================================
+# ПРИМЕНЕНИЕ САНКЦИЙ И КОМАНДЫ ПРОСМОТРА
+# ==========================================================================
+
+enforce:
+  help:
+    - "&#8AFFEB&l  Minutiae Enforcement"
+    - "&8  ───────────────────────────────"
+    - "&#7C93A0  /enforce &#E8EEF0<игрок> &#8AFFEB::<шаблон> &#7C93A0[модификаторы]"
+    - "&#7C93A0  /enforce &#E8EEF0<игрок> &#8AFFEB@measure(M) &#7C93A0duration=<срок>"
+    - "&#7C93A0  /enforce &#8AFFEBlift &#E8EEF0<id> &#7C93A0[причина]"
+    - "&#7C93A0  /enforce &#8AFFEBinfo &#E8EEF0<id>"
+    - "&#7C93A0  /enforce &#8AFFEBdocket &#E8EEF0<игрок>"
+    - "&#7C93A0  /enforce &#8AFFEBappeals&7 · &#8AFFEBappeal &#E8EEF0<id> accept|deny"
+    - "&8  ─── Модификаторы ───"
+    - "&#7C93A0  @flag  !@flag  ключ=значение"
+    - "&#7C93A0  @commute(M)  &8Сменить меру шаблона"
+    - "&#7C93A0  @count(P.X)  &8Добавить пункт правил"
+    - "&#7C93A0  @weave(#id)  &8Присоединить к делу"
+    - "&#7C93A0  @amend(id)   &8Изменить санкцию"
+    - "&#7C93A0  @probation(d)&8 Открыть окно пробации"
+    - "&#7C93A0  @stay(d) @remand @dry-run"
+    - "&8  Меры    &7 {measures}"
+    - "&8  Шаблоны &7 {layouts}"
+
+sanction:
+  applied: "{prefix}&#79FFB0&lСанкция применена"
+  stayed: "{prefix}&#FFC061&lСанкция отложена"
+  warning: "{prefix}&#FFC061&lВынесено предупреждение"
+  amended: "{prefix}&#79FFB0Санкция &#E8EEF0#{id} &#79FFB0изменена &8· &#8AA6B0{diff}"
+  dry-run: "{prefix}&#FFD479&lПробный расчёт &8· &#7C93A0не применено"
+  dry-run-footer: "&8  Ничего не сохранено"
+  compact: "{prefix}&#79FFB0✔ &#E8EEF0{target} &8→ &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+  suspended: "{prefix}&#FFC061&lУсловная санкция записана"
+  layout-manual: "<вручную>"
+  flag-implied: "@{name}(неявно)"
+  line:
+    target: "&#7C93A0  Цель       &#E8EEF0{target}"
+    measure: "&#7C93A0  Мера       &#8AFFEB{measure}"
+    layout: "&#7C93A0  Шаблон     &#B8C6CE{layout}"
+    rule: "&#7C93A0  Правило    &#B8C6CE{rule}"
+    reason: "&#7C93A0  Причина    {reason}"
+    duration: "&#7C93A0  Срок       &#FFD479{duration}"
+    duration-escalated: "&#7C93A0  Срок       &#FFD479{duration} &8(эскалация · до этого {prior})"
+    warning: "&#7C93A0  Предупр.   &#FFC061{count}&7/&#FFC061{required}"
+    stay: "&#7C93A0  Отсрочка   &#FFD479{stay}"
+    flags: "&#7C93A0  Флаги      &#8AA6B0{flags}"
+    id: "&8  ID         #{id}"
+    stays-activated: "&#8AFFEB  ↑ Активировано отложенных: {count}"
+    suspended-activated: "&#8AFFEB  ↑ Активировано условных санкций: {count}"
+
+reason:
+  display: "&#FFD479{short}"
+  card:
+    - "&#8AFFEB&lДетали Санкции"
+    - "&8─────────────────"
+    - "&#7C93A0Причина  &#E8EEF0{reason}"
+    - "&#7C93A0Мера     &#8AFFEB{measure}"
+    - "&#7C93A0Правило  &#B8C6CE{rule}"
+    - "&#7C93A0Срок     &#FFD479{duration}"
+    - "&#7C93A0Модер.   &#E8EEF0{staff}"
+    - "&#7C93A0Когда    &#8AA6B0{when}"
+
+info:
+  header: "{prefix}&#8AFFEB&lСанкция #{id}"
+  status: "&#7C93A0  Статус     &#E8EEF0{status}"
+  staff: "&#7C93A0  Модератор  &#E8EEF0{staff}"
+
+docket:
+  header: "{prefix}&#8AFFEB&lДело &8· &#E8EEF0{player} &#7C93A0(всего {total} · стр. {page}/{pages})"
+  empty: "&#7C93A0  Записей нет"
+  entry: "&8  #{id} &#8AFFEB{measure} &#B8C6CE{rule} &8[{status}] &8· {reason}"
+  woven: "&8      ↳ В составе дела #{parent}"
+  unknown: "{prefix}&#FF7A7AИгрок неизвестен или не в кэше &8· &#E8EEF0{player}"
+
+# ==========================================================================
+# СНЯТИЕ И ВОССТАНОВЛЕНИЕ САНКЦИЙ
+# ==========================================================================
+
+lift:
+  success: "{prefix}&#79FFB0Снято &#E8EEF0#{id} &8({kind}) &8· &#E8EEF0{target} &#8AFFEB{measure} &8модер. &#E8EEF0{actor}"
+  not-found: "{prefix}&#FF7A7AНет санкции с ID &#E8EEF0#{id}"
+  already: "{prefix}&#7C93A0Санкция &#E8EEF0#{id}&#7C93A0 уже снята"
+  broadcast: "{prefix}&#E8EEF0{target}&#7C93A0: {measure} снята &8({kind}) &#7C93A0· {rank} &#E8EEF0{staff}"
+  deny-kind: "{prefix}&#FF7A7AСнятие Отклонено &8· &#C9D6DBНедостаточно прав для вида '{kind}'"
+  deny-foreign: "{prefix}&#FF7A7AСнятие Отклонено &8· &#C9D6DBСанкцию выдал {staff}"
+  deny-blocking: "{prefix}&#FF7A7AСнятие Отклонено &8· &#C9D6DBНедостаточно прав, чтобы снять: {measure}"
+  unknown-token: "{prefix}&#FF7A7AОшибка Снятия &8· &#C9D6DB@{name} недопустима при снятии"
+  probation-vacate: "{prefix}&#FF7A7AОшибка Снятия &8· &#C9D6DB@probation требует pardon или served: аннулированная запись выходит из прецедента"
+  preview: "{prefix}&#FFD479&lПробный Расчёт &8· &#7C93A0будет снята &#E8EEF0#{id} &#E8EEF0{target} &#8AFFEB{measure} &8({kind})"
+  preview-cascade: "&#7C93A0  Каскад дополнительно снимет вплетённых дел: &#E8EEF0{count}"
+  cascade-done: "{prefix}&#79FFB0Цепочка снята &8· &#E8EEF0{count}&#79FFB0 санкций всего"
+  bulk-preview: "{prefix}&#FFC061Под критерий '{value}' попадает санкций: {count} &8· добавьте &#E8EEF0confirm&8 для выполнения"
+  bulk-empty: "{prefix}&#7C93A0Нечего снимать по критерию '{value}'"
+  bulk-done: "{prefix}&#79FFB0Массовое снятие завершено &8· аннулировано санкций: &#E8EEF0{count}&#79FFB0 по '{value}'"
+  kind:
+    vacate: "аннулирована"
+    pardon: "помилование"
+    time-served: "срок зачтён"
+
+unlift:
+  success: "{prefix}&#79FFB0Восстановлена &#E8EEF0#{id} &8· &#E8EEF0{target}"
+  not-lifted: "{prefix}&#7C93A0Санкция &#E8EEF0#{id}&#7C93A0 не снята"
+
+# ==========================================================================
+# СИСТЕМА АПЕЛЛЯЦИЙ
+# ==========================================================================
+
+appeal:
+  player-only: "{prefix}&#FF7A7AПодать апелляцию может только игрок."
+  not-yours: "{prefix}&#FF7A7AЭта санкция не ваша."
+  not-appealable: "{prefix}&#FF7A7AЭту санкцию нельзя обжаловать."
+  already-lifted: "{prefix}&#7C93A0Эта санкция уже снята."
+  duplicate: "{prefix}&#FFC061Апелляция по санкции &#E8EEF0#{id}&#FFC061 уже на рассмотрении."
+  submitted: "{prefix}&#79FFB0Апелляция &#E8EEF0#{appeal}&#79FFB0 подана по санкции &#E8EEF0#{id}&#79FFB0."
+  not-found: "{prefix}&#FF7A7AНет апелляции с ID &#E8EEF0#{id}"
+  already-decided: "{prefix}&#7C93A0По апелляции &#E8EEF0#{id}&#7C93A0 уже вынесено решение."
+  accepted: "{prefix}&#79FFB0Апелляция &#E8EEF0#{id}&#79FFB0 удовлетворена &8· санкция снята"
+  denied: "{prefix}&#7C93A0Апелляция &#E8EEF0#{id}&#7C93A0 отклонена"
+  lift-reason: "апелляция удовлетворена"
+  status:
+    accepted: "удовлетворена"
+    denied: "отклонена"
+
+appeals:
+  header: "{prefix}&#8AFFEB&lАпелляции в Ожидании &#7C93A0(всего {total} · стр. {page}/{pages})"
+  empty: "&#7C93A0  Апелляций на рассмотрении нет"
+  entry: "&8  #{appeal} &#7C93A0санкция #{id} &#E8EEF0{appellant} &8· &#8AA6B0{text}"
+
+# ==========================================================================
+# ОГРАНИЧЕНИЯ И ЭФФЕКТЫ ИГРОКОВ
+# ==========================================================================
+
+mechanism:
+  warn: "&#8AFFEB&l[Модерация] &r&#E8EEF0{reason}"
+  kick: "&#FF7A7A{reason}"
+
+access:
+  banned:
+    - "&#FF7A7A&lВЫ ПОД САНКЦИЕЙ"
+    - ""
+    - "&#E8EEF0{reason}"
+    - ""
+    - "&#7C93A0Мера &8· &#8AFFEB{measure}"
+
+behaviour:
+  muted: "{prefix}&#FF7A7AВы в муте и не можете писать в чат."
+  quarantine:
+    applied: "{prefix}&#FFC061Вы помещены в карантин."
+    boundary: "{prefix}&#7C93A0Вы не можете покинуть зону карантина."
+  lifted: "{prefix}&#79FFB0Санкция против вас снята."
+
+# ==========================================================================
+# ОПОВЕЩЕНИЯ И ТРАНСЛЯЦИЯ
+# ==========================================================================
+
+broadcast:
+  sanction: "{prefix}&#E8EEF0{target} &#7C93A0получил санкцию от {rank} &#E8EEF0{staff} &8· &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+
+notify:
+  lift: "{prefix}&#8AFFEB[Уведомление] {rank} &#E8EEF0{staff} &#7C93A0снял &#E8EEF0#{id} &8({kind}) &#7C93A0с &#E8EEF0{target} &8· &#8AFFEB{measure}"
+  summary: "{prefix}&#8AFFEB[Уведомление] {rank} &#E8EEF0{staff} &#8AFFEB{measure} &#7C93A0на &#E8EEF0{target} &8({rule}) &#FFD479{duration} &8· {reason}"
+  appeal: "{prefix}&#8AFFEB[Апелляция] &#E8EEF0{player} &#7C93A0обжаловал санкцию &#E8EEF0#{id} &8(апелляция #{appeal}) &8· &#8AA6B0{text}"
+  appeal-decision: "{prefix}&#8AFFEB[Апелляция] &#7C93A0Апелляция &#E8EEF0#{appeal} &8(санкция #{id}) &#7C93A0{verdict} &8· &#E8EEF0{reviewer}"
+  review: "{prefix}&#8AFFEB[Пересмотр] &#7C93A0Санкция &#E8EEF0#{id} &8({measure}, модер. {staff}) &#7C93A0ожидает пересмотра"
+  unlift: "{prefix}&#8AFFEB[Уведомление] &#E8EEF0{staff} &#7C93A0восстановил &#E8EEF0#{id} &#7C93A0на &#E8EEF0{target}"
+  bulk-lift: "{prefix}&#8AFFEB[Уведомление] &#E8EEF0{staff} &#7C93A0массово аннулировал санкций: &#E8EEF0{count}&#7C93A0 по '&#E8EEF0{value}&#7C93A0'"
+  dispatch: "{prefix}&#8AFFEB[Автомат] &#8AFFEB{automaton}&8.&#E8EEF0{rule} &#7C93A0сработал на &#B8C6CE{event} &8· &#E8EEF0{subject}"
+
+# ==========================================================================
+# ОШИБКИ И ВАЛИДАЦИЯ
+# ==========================================================================
+
+error:
+  parse: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DB{error}"
+  resolve: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB{error}"
+  enforce-failed: "{prefix}&#FF7A7AНе удалось применить &8· &#C9D6DB{error}"
+  command: "{prefix}&#FF7A7AОшибка команды &8· &#C9D6DB{error}"
+  weave-parent-not-found: "{prefix}&#FF7A7AНе удалось применить &8· &#C9D6DBродительское дело #{id} не найдено"
+
+parse:
+  unterminated-quote: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBНезакрытая кавычка"
+  unbalanced-close: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBЛишняя ')' на позиции {offset}"
+  unclosed-open: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBНе закрыто '(': {count}"
+  multiple-layouts: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBДопустим только один селектор ::шаблон"
+  empty-layout: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBПустой селектор шаблона '::'"
+  malformed-annotation: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBНекорректная аннотация {token} &8({error})"
+  empty-override-key: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBПараметр с пустым ключом: {token}"
+  duplicate-override: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBПовтор параметра '{key}'"
+  unexpected-token: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBЛишний токен '{token}': цель уже задана как '{target}' &8(параметры пишутся как ключ=\"значение\", напр. reason=\"...\")"
+  no-target: "{prefix}&#FF7A7AОшибка разбора &8· &#C9D6DBНе указан игрок-цель"
+
+resolve:
+  directive-negated: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBДирективу @{name} нельзя отрицать"
+  duplicate-directive: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBПовтор @{name}"
+  count-unknown-rule: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@count ссылается на неизвестное правило {rule}"
+  waive-unknown: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@waive указывает неизвестную аннотацию @{name}"
+  unhandled-directive: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНеобработанная директива @{name}"
+  amend-conflict: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@amend несовместим с {with}"
+  tariff-temporal: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@tariff применим только к временным мерам, а не к {measure}"
+  unknown-layout: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНеизвестный шаблон ::{key}"
+  unknown-annotation: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНеизвестная аннотация @{name}"
+  no-permission: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНедостаточно прав для @{name}"
+  remand-standalone: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@remand — самостоятельная мера пресечения и не сочетается с другой мерой"
+  measure-commute-exclusive: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@measure и @commute взаимоисключимы"
+  nothing-to-commute: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНечего смягчать: у шаблона нет меры"
+  layout-has-measure: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBШаблон задаёт меру; используйте @commute для замены"
+  no-measure: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBМера не задана: ручная санкция требует @measure(...) или @remand"
+  commute-mitigate: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНедостаточно прав для смягчения {from} до {to}"
+  commute-aggravate: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНедостаточно прав для ужесточения {from} до {to}"
+  conflict: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBКонфликт аннотаций @{left} и @{right}"
+  requires: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@{requirer} требует @{required} &8(можно снять через @waive)"
+  unknown-override: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНеизвестный параметр {key} &8(допустимо: {allowed})"
+  instant-no-duration: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBМера {measure} мгновенная и не принимает срок"
+  invalid-duration: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBНеверный срок: {error}"
+  measure-needs-duration: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBМера {measure} требует срок"
+  weave-format: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@weave ожидает ID санкции (например, #42)"
+  weave-positive: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DBID в @weave должен быть положительным"
+  suspend-stay: "{prefix}&#FF7A7AОШИБКА &8· &#C9D6DB@suspended и @stay взаимоисключимы"
+
+# ==========================================================================
+# АВТОМАТИЗАЦИЯ И БЕЗОПАСНОСТЬ
+# ==========================================================================
+
+fingerprint:
+  alert: "{prefix}&#FF7A7A[Отпечаток] &#FFC061{name} &#7C93A0возможно обходит бан &8(оценка {score} · совпадает с {banned})"
+  header: "{prefix}&#8AFFEB&lОтпечаток &8· &#E8EEF0{name}"
+  no-session: "&#7C93A0  Сессия не записана"
+  line: "&#7C93A0  {label}  &#E8EEF0{value}"
+  no-match: "&#79FFB0  Совпадений нет"
+  match: "&#FFC061  Совпадение &8· бан={banned} оценка={score} сигналов={signals}"
+  not-online: "{prefix}&#FF7A7AИгрок не в сети &8· &#E8EEF0{name}"
+
+alam:
+  list:
+    header: "{prefix}&#8AFFEB&lАвтоматы &8· &#E8EEF0{count} правил(о)"
+    entry: "&8  &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· on &#B8C6CE{event} &8· {stages} стадий"
+  sim:
+    header: "{prefix}&#FFD479&lСимуляция &8· &#B8C6CE{kind} &8· &#E8EEF0{subject}"
+    fire: "&#79FFB0  ✔ сработало бы &8· &#8AFFEB{automaton}&8.&#E8EEF0{rule}"
+    skip: "&#7C93A0  ✘ &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· {decision}"
+    empty: "&#7C93A0  ни одно правило не сработает"
+    unknown-kind: "{prefix}&#FF7A7AНеизвестный тип события &8· &#E8EEF0{kind}"
+
+# ==========================================================================
+# ДИАГНОСТИКА
+# ==========================================================================
+
+diag:
+  ping:
+    probing: "{prefix}&#7C93A0Проверка хранилища…"
+    ok: "{prefix}&#79FFB0Хранилище ОК &8· &#7C93A0задержка &#E8EEF0{latency}мс &8· схема &#E8EEF0v{schema}"
+    unavailable: "{prefix}&#FF7A7AХранилище НЕДОСТУПНО"
+  rules:
+    count: "{prefix}&#8AFFEBПравил загружено &8· &#E8EEF0{count}"
+    entry: "{prefix}&#B8C6CE{id} &8· &#E8EEF0{description}"
+    undefined: "{prefix}&#FF7A7AПравило не найдено &8· &#E8EEF0{id}"
+  layouts:
+    list: "{prefix}&#8AFFEBШаблоны &8({count}) &8· &#E8EEF0{keys}"
+    unknown: "{prefix}&#FF7A7AШаблон не найден &8· &#E8EEF0{key}"
+  layout:
+    header: "{prefix}&#8AFFEB&lШаблон &8· &#E8EEF0::{key}"
+    measure: "&#7C93A0  Мера      &#8AFFEB{measure}"
+    rule: "&#7C93A0  Правило   &#B8C6CE{rule} &8({description})"
+    reason: "&#7C93A0  Причина   &#E8EEF0{reason}"
+    duration: "&#7C93A0  Срок      &#FFD479{duration}"
+    escalation: "&#7C93A0  Эскал.    &#FFD479{ladder}"
+    flags: "&#7C93A0  Флаги     &#8AA6B0{flags}"
+    reason-inherited: "<описание правила>"
+  annotations:
+    list: "{prefix}&#8AFFEBАннотации &8({count}) &8· &#E8EEF0{names}"
+  annotation:
+    unknown: "{prefix}&#FF7A7AАннотация не найдена &8· &#E8EEF0@{name}"
+    header: "{prefix}&#8AFFEB&l@{name}"
+    scope: "&#7C93A0  Область     &#E8EEF0{scope}"
+    permission: "&#7C93A0  Право       &#8AA6B0{permission}"
+    implies: "&#7C93A0  Влечёт      &#E8EEF0{names}"
+    requires: "&#7C93A0  Требует     &#E8EEF0{names}"
+    conflicts: "&#7C93A0  Конфликт    &#E8EEF0{names}"

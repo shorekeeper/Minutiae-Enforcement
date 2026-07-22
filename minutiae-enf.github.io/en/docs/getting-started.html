@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/getting-started">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Getting started - Minutiae Enforcement</title>
+    <meta name="description" content="Install Minutiae Enforcement, boot it once, grant permissions, and issue your first sanction.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Getting started</h1>
+            <p class="lede">From a jar file to your first audited sanction.
+                Nothing here requires a database server or an external
+                dependency.</p>
+
+            <h2 id="requirements">Requirements</h2>
+            <table class="items">
+                <tr><td>Server</td>
+                    <td>Paper 1.21 or newer. Spigot is not supported: the
+                        plugin uses Paper's command and chat APIs
+                        directly.</td></tr>
+                <tr><td>Java</td>
+                    <td>Java 21 or newer.</td></tr>
+                <tr><td>Storage</td>
+                    <td>None to install. The plugin ships with SQLite and
+                        creates its database file on first boot.</td></tr>
+            </table>
+
+            <h2 id="install">Installation</h2>
+            <ol>
+                <li>Drop <code>MinutiaeEnforcement.jar</code> into your
+                    server's <code>plugins/</code> directory.</li>
+                <li>Start the server. The boot log prints one line per
+                    subsystem; a healthy boot ends with
+                    <code>ready: all subsystems online</code>.</li>
+                <li>Stop the server if you want to edit the generated
+                    configuration before real use, or keep going with the
+                    defaults.</li>
+            </ol>
+
+            <p>First boot creates the following files:</p>
+            <table class="items">
+                <tr><td>config.yml</td>
+                    <td>Runtime configuration. Every section is documented
+                        inline; see <a href="configuration.html">Configuration</a>
+                        for the guided tour.</td></tr>
+                <tr><td>rules.yml</td>
+                    <td>Your server rules as numbered entries. Ships with a
+                        nine-rule example set; replace it with your own.</td></tr>
+                <tr><td>layouts.yml</td>
+                    <td>Sanction templates. Ships with examples covering
+                        griefing, cheating, and chat toxicity.</td></tr>
+                <tr><td>lang/en.yml</td>
+                    <td>The message bundle for your default locale. Edited
+                        files are never overwritten; keys you have not merged
+                        yet fall back to the shipped defaults.</td></tr>
+                <tr><td>minutiae.db</td>
+                    <td>The SQLite database. Sanctions, appeals, audit, chat
+                        transcripts, and fingerprint data live here.</td></tr>
+                <tr><td>alam/</td>
+                    <td>Automation definitions. Empty by default; ignore it
+                        until you want automatic enforcement.</td></tr>
+            </table>
+
+            <h2 id="verify">Verify the installation</h2>
+            <pre><code>/me-ban ping</code></pre>
+            <p>This probes the storage backend and reports round-trip latency
+                and the schema version. If it answers, everything below it
+                works.</p>
+
+            <h2 id="permissions">Grant permissions</h2>
+            <p>Two bundle nodes cover almost everything:</p>
+            <table class="items">
+                <tr><td>minutiae.staff</td>
+                    <td>The day-to-day moderation surface: issuing, lifting,
+                        dockets, appeals review, most annotations.</td></tr>
+                <tr><td>minutiae.admin</td>
+                    <td>Everything, including bulk lifts, lift reversal,
+                        reloads, and the destructive annotations. Granted to
+                        operators by default.</td></tr>
+            </table>
+            <div class="callout note"><span class="label">Note</span>
+                <p>Leaf nodes register with <code>default: false</code>, which
+                    applies to operators too. An operator holds a leaf only
+                    through the <code>minutiae.admin</code> chain. If a command
+                    disappears for an operator, the chain in
+                    <code>paper-plugin.yml</code> or your permissions plugin is
+                    broken; see <a href="permissions.html">Permissions</a>.</p>
+            </div>
+            <p>With LuckPerms:</p>
+            <pre><code>/lp group moderator permission set minutiae.staff true</code></pre>
+
+            <h2 id="first-sanction">Your first sanction</h2>
+            <p>Using a shipped example layout:</p>
+            <pre><code>/enforce SomePlayer ::toxic</code></pre>
+            <p>The <code>toxic</code> layout cites rule <code>P.2.4</code>,
+                applies a three-hour mute, and carries
+                <code>@warn-first(2)</code>: the first two offences under this
+                rule become formal warnings instead of mutes. Run it twice on a
+                test account and watch the report change.</p>
+            <p>Fully manual, without a layout:</p>
+            <pre><code>/enforce SomePlayer @measure(KICK) reason="Testing, ignore"</code></pre>
+            <p>Not sure yet? Preview without applying anything:</p>
+            <pre><code>/enforce SomePlayer ::griefing @dry-run</code></pre>
+
+            <h2 id="undo">Undoing it</h2>
+            <p>Every report ends with an <code>ID</code> line. Lift by that
+                identifier:</p>
+            <pre><code>/enforce lift 1 vacate "Test sanction"</code></pre>
+            <p><code>vacate</code> erases the sanction from the player's
+                precedent, which is what you want for a test. The distinction
+                between vacate, pardon, and time served is covered in
+                <a href="lift.html">Lifting sanctions</a>.</p>
+
+            <h2 id="next">Where to go next</h2>
+            <ul>
+                <li><a href="configuration.html">Configuration</a> - broadcasts,
+                    staff ranks, notification channels.</li>
+                <li><a href="layouts.html">Layouts and escalation</a> - encode
+                    your punishment policy once instead of retyping it.</li>
+                <li><a href="commands.html">Commands</a> - the complete grammar
+                    reference.</li>
+            </ul>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

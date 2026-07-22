@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/guide/runtime">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALAM runtime model - Minutiae Enforcement</title>
+    <meta name="description" content="ALAM event dispatch, trigger tracking, capture, throttling, dry-run posture, and sanction materialization.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Runtime model</h1>
+            <p class="lede">The runtime consumes immutable plans. It adapts platform events, advances trigger state, evaluates guards and verdicts, and routes the resulting sanction through the same resolver and executor used by manual commands.</p>
+
+            <h2 id="indexing">Event indexing</h2>
+            <p>At construction, <code>DispatchEngine</code> indexes each rule under every event kind observed by its trigger. An atomic or repeated rule has one index entry. A sequence rule is indexed under every step kind, allowing any participating event to advance its partial match.</p>
+
+            <h2 id="facts">Event facts</h2>
+            <p>Listeners translate Paper events into <code>EventFacts</code>, a platform-neutral record containing the event kind, subject UUID, display name, and a flat map of typed fields. <code>EventAdapter</code> converts those facts into the nominal ALAM event record expected by the plan.</p>
+            <p>An absent or incompatible fact becomes the field type's neutral value: zero, false, or empty text. Malformed platform input therefore tends to fail guard comparisons instead of faulting dispatch.</p>
+
+            <h2 id="gating">Gating order</h2>
+            <ol>
+                <li>Reject a rule whose automaton is self-muted.</li>
+                <li>Apply the trigger-specific state transition.</li>
+                <li>Apply the rule guard to the event argument vector.</li>
+                <li>Acquire one firing from the automaton's per-minute throttle.</li>
+                <li>Evaluate the verdict and materialize its sanction descriptor.</li>
+            </ol>
+            <p>For atomic and repeated triggers, the guard is evaluated before a repeated occurrence enters its window. For a sequence, step guards decide admission while the rule guard runs only after completion against the full captured argument vector.</p>
+
+            <h2 id="partitions">Partitions</h2>
+            <table class="items">
+                <tr><td><code>GroupBy::Subject</code></td><td>One state partition per subject UUID.</td></tr>
+                <tr><td><code>GroupBy::Global</code></td><td>One state partition shared by all events.</td></tr>
+                <tr><td><code>GroupBy::Field</code></td><td>One state partition per rendered value of a named event field.</td></tr>
+            </table>
+            <p>The internal key combines automaton name, rule name, and rendered partition. State is therefore isolated between rules even when their partition values are equal.</p>
+
+            <h2 id="tracking">Window and sequence tracking</h2>
+            <p><code>Trigger::Repeated</code> uses a fixed-capacity primitive timestamp ring per partition. A firing clears that ring, so another firing must accrue a new full count.</p>
+            <p><code>Trigger::Sequence</code> keeps one partial match per partition. An event that matches the first step while another step is expected re-anchors the sequence at that event. Admitted step facts are captured in order. On completion, the capture list is drained and converted into one argument per declared event.</p>
+
+            <h2 id="throttle">Throttle and self-muting</h2>
+            <p>Each automaton owns a fixed-capacity timestamp ring for its one-minute firing limit. Saturating the ring rejects the firing and adds the automaton to the self-mute set. Subsequent events are rejected before trigger state is consulted, bounding the blast radius of a defective definition.</p>
+
+            <h2 id="firing">Verdict materialization</h2>
+            <p>The verdict returns a total <code>Sanction</code> descriptor. <code>SanctionMaterializer</code> translates it into the manual command surface: citations become count directives, the measure becomes a measure directive, a fixed duration becomes a duration override, and annotation variants become annotation tokens.</p>
+            <p>The resulting command is passed to <code>SanctionResolver</code> under the configured system actor's permission predicate. Automatic enforcement cannot exceed the actor's grant because it does not bypass manual validation.</p>
+
+            <h2 id="dry-run">Arming and dry-run</h2>
+            <p>An automaton not present in the armed set is evaluated in forced dry-run. The plan, guard, verdict, materializer, and resolver still run, but the executor persists and applies nothing. A descriptor may independently force dry-run through <code>DryRun::Forced</code>.</p>
+
+            <h2 id="threading">Threading</h2>
+            <p>Dispatch may run on the main server thread or the asynchronous chat thread. Tracking maps are concurrent. The interpreter is reentrant. Query built-ins perform cached reads only. Storage and player-facing effects are delegated to existing asynchronous and main-thread boundaries in the sanction executor.</p>
+
+            <h2 id="simulation">Simulation</h2>
+            <p>The <code>/alam simulate</code> path does not consume window, sequence, throttle, capture, or mute state. Repeated triggers are treated as if their recurrence condition were satisfied after the guard. Sequence simulation tests the final step and synthesizes earlier argument positions from the simulated event because no live partial state is consulted.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

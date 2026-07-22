@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/web-panel">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Web panel - Minutiae Enforcement</title>
+    <meta name="description" content="The registry-style case browser: setup, tokens and roles, the hive tree, and deployment behind a reverse proxy.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Web panel</h1>
+            <p class="lede">A built-in case browser styled after a registry
+                editor: subjects, sanctions, appeals, transcripts, and audit
+                trails as one navigable tree. No external web server, no
+                database exposure.</p>
+
+            <h2 id="setup">Setup</h2>
+            <pre><code>web:
+  enabled: true
+  bind: 127.0.0.1
+  port: 8787
+  tokens:
+    - token: "generate-something-long-and-random"
+      role: read
+    - token: "another-long-random-value"
+      role: write</code></pre>
+            <p>Restart after changing this section. The panel is then at
+                <code>http://127.0.0.1:8787/</code>; the login form takes a
+                token and stores it as a session cookie.</p>
+            <div class="callout danger"><span class="label">Important</span>
+                <p>Replace both placeholder tokens before enabling, and treat
+                    them as passwords - a token is the entire credential. Keep
+                    <code>bind</code> on loopback and put TLS in front; see
+                    <a href="#deployment">deployment</a>.</p>
+            </div>
+
+            <h2 id="roles">Roles and authority</h2>
+            <table class="items">
+                <tr><td>read</td>
+                    <td>Navigation and search only. Cannot change
+                        anything.</td></tr>
+                <tr><td>write</td>
+                    <td>Read, plus: lift a sanction, accept or deny an appeal,
+                        and issue a sanction through the same grammar as the
+                        in-game command.</td></tr>
+            </table>
+            <p>A write token is deliberately weaker than an administrator.
+                Panel actions execute through a synthetic actor holding a fixed,
+                bounded grant set - the everyday annotation surface plus
+                foreign and blocking lifts. It can never:</p>
+            <ul>
+                <li>impersonate staff (<code>@as</code>);</li>
+                <li>aggravate a commutation;</li>
+                <li>amend existing sanctions;</li>
+                <li>backdate;</li>
+                <li>bulk-lift or reverse lifts.</li>
+            </ul>
+            <p>A compromised write token is a moderator, not root. Token
+                comparison is constant-time, so the token space cannot be probed
+                through response timing.</p>
+
+            <h2 id="hive">The tree</h2>
+            <p>Five top-level hives, each a concern:</p>
+            <table class="items">
+                <tr><td>HKEY_CASES</td>
+                    <td>The sanction tree, descending subject, measure,
+                        enforcer, sanction. Provenance is the hierarchy itself:
+                        to see who sanctioned whom, you descend, never chase
+                        cross-references. Each sanction opens into provisions,
+                        captured signals, transcript, rationale, amendments,
+                        woven children, and its audit trail.</td></tr>
+                <tr><td>HKEY_APPEALS</td>
+                    <td>Appeals by appellant and in aggregate, with pending
+                        ones actionable under a write token.</td></tr>
+                <tr><td>HKEY_AMENDS</td>
+                    <td>Amendments and per-sanction traceback histories.</td></tr>
+                <tr><td>HKEY_FINGERPRINTS</td>
+                    <td>The forensic network: signal values and their bearers,
+                        account clusters, and per-suspect evidence
+                        decomposition. See
+                        <a href="fingerprint.html">Evasion detection</a>.</td></tr>
+                <tr><td>HKEY_SYSTEM</td>
+                    <td>Aggregate counters, uptime, schema version, and the
+                        global audit trail.</td></tr>
+            </table>
+            <p>Worth knowing while navigating:</p>
+            <ul>
+                <li>The <strong>Rationale</strong> node under a sanction shows
+                    the recorded decision trace: prior counts consulted,
+                    ladder rung selected, probation state, warn-first
+                    downgrade. It answers "why 30 days?" without
+                    recomputation.</li>
+                <li>The <strong>Transcript</strong> node opens captured chat as
+                    a CSV table in a modal.</li>
+                <li>Search (top right) takes a sanction id or a player
+                    name.</li>
+                <li>Arrow keys navigate the tree;
+                    <kbd>Backspace</kbd>-style Up, Back, and Forward buttons
+                    behave like a file manager.</li>
+            </ul>
+
+            <h2 id="actions">Write actions</h2>
+            <table class="items">
+                <tr><td>Lift</td>
+                    <td>On any unlifted sanction node. Prompts for a reason;
+                        executes as a vacatur through the same audited path as
+                        the command.</td></tr>
+                <tr><td>Accept / Deny</td>
+                    <td>On any pending appeal. Acceptance vacates the
+                        underlying sanction.</td></tr>
+                <tr><td>Manage</td>
+                    <td>Issues a sanction from a spec string in the command
+                        grammar:
+                        <code>Player ::toxic</code> or
+                        <code>Player @measure(MUTE) duration=1h</code>. The
+                        spec passes the full resolver - validation errors come
+                        back verbatim.</td></tr>
+            </table>
+
+            <h2 id="deployment">Deployment behind a reverse proxy</h2>
+            <p>The built-in server speaks plain HTTP and is designed to sit
+                behind a TLS-terminating proxy on the same host:</p>
+            <pre><code>server {
+    listen 443 ssl;
+    server_name panel.example.org;
+    # ... ssl_certificate ...
+
+    location / {
+        proxy_pass http://127.0.0.1:8787;
+        proxy_set_header Host $host;
+        allow 203.0.113.0/24;   # your staff network, if applicable
+        deny all;
+    }
+}</code></pre>
+            <ul>
+                <li>Keep <code>bind: 127.0.0.1</code> - only the proxy reaches
+                    the panel directly.</li>
+                <li>The session cookie is <code>HttpOnly</code> and
+                    <code>SameSite=Strict</code>; on a non-loopback bind the
+                    <code>Secure</code> attribute is added, which is one more
+                    reason not to expose plain HTTP.</li>
+                <li>Rotate tokens by editing the list and restarting; a removed
+                    token dies with the restart.</li>
+            </ul>
+
+            <h2 id="limits">Limitations</h2>
+            <table class="items">
+                <tr><td>English only</td>
+                    <td>The panel UI is not localised in this release.</td></tr>
+                <tr><td>Vacate only</td>
+                    <td>The lift button always vacates. Pardons and time-served
+                        lifts are issued in game, where the full lift grammar
+                        is available.</td></tr>
+                <tr><td>Read-mostly by design</td>
+                    <td>Configuration, layouts, rules, and bundles are files -
+                        the panel neither shows nor edits them.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

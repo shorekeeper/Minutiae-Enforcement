@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/event/Login">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Login - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM Login event, post-join dispatch timing, remote-address facts, and its distinction from pre-login access checks.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Event', href: 'Event.html', group: 'Base event' },
+            { label: 'Account', href: '../type/Account.html', group: 'Field types' },
+            { label: 'Text', href: '../type/Text.html' },
+            { label: 'Chat', href: 'Chat.html', group: 'Sibling events' },
+            { label: 'Break', href: 'Break.html' },
+            { label: 'Evasion', href: 'Evasion.html' },
+            { label: 'is_online', href: '../fn/is_online.html', group: 'Related queries' },
+            { label: 'fingerprint_score', href: '../fn/fingerprint_score.html' },
+            { label: 'Trigger::Sequence', href: '../ctor/Trigger.Sequence.html', group: 'Common consumers' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Login</h1>
+                <span class="entity-badge event">event</span>
+            </div>
+            <p class="entity-def">A successful player join observed after admission, containing the connecting player's account, display name, and available remote address text.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Concrete event</td></tr>
+                <tr><th>Base</th><td><code>Event</code></td></tr>
+                <tr><th>Paper source</th><td><code>PlayerJoinEvent</code></td></tr>
+                <tr><th>Listener priority</th><td><code>MONITOR</code></td></tr>
+                <tr><th>Dispatch thread</th><td>Paper main server thread</td></tr>
+                <tr><th>Admission point</th><td>After successful pre-login and player join</td></tr>
+                <tr><th>Live listener</th><td>Registered by the dispatch boot stage</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>rule&lt;Login&gt; name { ... }                                 (1)
+
+Step&lt;Login&gt; {
+    .guard = login_guard,
+}                                                          (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Declares a rule observing successful player joins.</span></li>
+                <li><span class="decl-no">(2)</span><span>Declares one successful-login step of a sequence.</span></li>
+            </ul>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Source</th><th>Description</th></tr>
+                <tr>
+                    <td><code>subject</code></td>
+                    <td><code>Account</code></td>
+                    <td>Joined player's UUID</td>
+                    <td>Stable identity of the player who completed login.</td>
+                </tr>
+                <tr>
+                    <td><code>subject_name</code></td>
+                    <td><code>Text</code></td>
+                    <td>Joined player's current name</td>
+                    <td>Display name captured during the join event.</td>
+                </tr>
+                <tr>
+                    <td><code>ip</code></td>
+                    <td><code>Text</code></td>
+                    <td>Remote socket address when available</td>
+                    <td>Text returned by <code>InetAddress.getHostAddress()</code>, or empty text after adaptation when unavailable.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li><code>Login</code> represents a successful join, not an attempted or rejected connection.</li>
+                <li>A login rule cannot prevent the same join event from occurring because dispatch begins after the player has joined.</li>
+                <li>The <code>ip</code> field may be empty when Paper exposes no socket address.</li>
+                <li>The field contains address text only. It exposes no port, hostname, provider, proxy classification, or fingerprint evidence decomposition.</li>
+                <li>A <code>Step&lt;Login&gt;</code> guard accepts one <code>Login</code> value and returns <code>Bool</code>.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The listener runs for <code>PlayerJoinEvent</code>. The access guard and fingerprint pre-login listener have already run by this point. A connection denied by either pre-login path never produces a live <code>Login</code> event.</p>
+
+            <h3 id="post-join">Post-join timing</h3>
+            <p>A sanction fired from <code>Login</code> is issued after the subject exists as an online Paper player. A live connection-blocking sanction may therefore disconnect the player shortly after join rather than reject the original connection before world entry.</p>
+            <p>Behavioral sanctions may be applied to the now-online player through the executor's main-thread effect path.</p>
+
+            <div class="normative">
+                <span class="normative-label">Admission distinction</span>
+                <p>Use the existing access guard for persisted active bans. A <code>Login</code> rule reacts to a successful join and is not a synchronous pre-login admission policy.</p>
+            </div>
+
+            <h3 id="ip">ip</h3>
+            <p>When both the player's socket address and underlying network address are available, the listener stores <code>getHostAddress()</code>. This normally produces a numeric IPv4 or IPv6 string without DNS lookup.</p>
+            <p>When unavailable, the raw fact map contains no <code>ip</code> key. <code>EventAdapter</code> then supplies empty text because the declared field type is <code>Text</code>.</p>
+
+            <h3 id="presence">Online state</h3>
+            <p>During ordinary join dispatch, <code>is_online(event.subject)</code> normally returns true because the player has already joined. Definitions should not use that expression as the sole distinction between admitted and rejected login attempts.</p>
+
+            <h3 id="fingerprint">Fingerprint distinction</h3>
+            <p>The fingerprint subsystem performs its own assessment during <code>AsyncPlayerPreLoginEvent</code>. The <code>Login</code> event exposes only the IP text and does not automatically include the computed fingerprint score.</p>
+            <p>A guard may call <code>fingerprint_score(event.subject)</code>, but that query reads a separate cache. On a cache miss it returns <code>0.0</code> and schedules an asynchronous fill, so the first login evaluation may observe the neutral score.</p>
+
+            <h3 id="presence-reconciliation">Other join listeners</h3>
+            <p>The plugin also uses the join event to load persisted behavioral state, reconcile concealment, enrich fingerprint sessions, record session intervals, update names, and load staff preferences. These listeners are independent of ALAM dispatch and may complete asynchronously.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The built-in shape is:</p>
+                <pre><code class="language-java">"Login", new Event(
+    "Login",
+    List.of(
+        new Field("subject", ACCOUNT),
+        new Field("subject_name", TEXT),
+        new Field("ip", TEXT)
+    )
+)</code></pre>
+
+                <p>The listener omits the fact rather than storing a null value:</p>
+                <pre><code class="language-java">@EventHandler(priority = EventPriority.MONITOR)
+public void onJoin(final PlayerJoinEvent event) {
+    final Map&lt;String, Object&gt; facts =
+        new HashMap&lt;&gt;(2);
+
+    if (event.getPlayer().getAddress() != null
+            &amp;&amp; event.getPlayer()
+                .getAddress()
+                .getAddress() != null) {
+        facts.put(
+            "ip",
+            event.getPlayer()
+                .getAddress()
+                .getAddress()
+                .getHostAddress()
+        );
+    }
+
+    engine.handle(new EventFacts(
+        EventKind.LOGIN,
+        event.getPlayer().getUniqueId(),
+        event.getPlayer().getName(),
+        facts
+    ));
+}</code></pre>
+
+                <ul>
+                    <li>The fact map is mutable during construction but is not modified after dispatch begins.</li>
+                    <li>The listener performs no reverse-DNS lookup.</li>
+                    <li>Simulation defaults an empty supplied IP to <code>127.0.0.1</code>, which differs from the live missing-address fallback of empty text.</li>
+                    <li>A live join rule is indexed under <code>EventKind.LOGIN</code>.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Address extraction</dt>
+                    <dd>O(L), where L is the numeric address text length.</dd>
+                    <dt>Fact construction</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Rule dispatch</dt>
+                    <dd>O(R), plus trigger and interpreter cost for R rules indexed under <code>Login</code>.</dd>
+                    <dt>DNS or storage</dt>
+                    <dd>No direct operation in the listener.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Login&gt; suspicious_network {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            event.ip ~ "^203\\.0\\.113\\."
+            &amp;&amp; precedent(event.subject, P.5.1) &gt; 0;
+    }
+    =&gt; verdict =
+        login_verdict&lt;Measure::SUSPENSION, 7d&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>A login value or field is used in an incompatible type position.</td></tr>
+                <tr><td><code>E015</code></td><td>Elaboration</td><td>A guard or verdict accesses a field not declared by <code>Login</code>.</td></tr>
+                <tr><td><code>E025</code></td><td>Elaboration</td><td>The event type is misspelled or unknown.</td></tr>
+                <tr><td><code>V015</code></td><td>Evaluation</td><td>A compile-time text pattern used against an IP value is invalid.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Event</code></td><td>Common account and display-name fields.</td></tr>
+                <tr><td><code>is_online</code></td><td>Normally true for a subject during successful join dispatch.</td></tr>
+                <tr><td><code>fingerprint_score</code></td><td>Queries a separate non-blocking score cache.</td></tr>
+                <tr><td><code>Trigger::Sequence</code></td><td>Commonly uses login as the first event of a post-join behavior sequence.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

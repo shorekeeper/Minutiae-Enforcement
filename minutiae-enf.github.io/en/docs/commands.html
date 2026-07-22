@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/commands">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Commands - Minutiae Enforcement</title>
+    <meta name="description" content="Full reference for /enforce, /appeal, and diagnostic commands.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Commands</h1>
+            <p class="lede">Reference for the sanction issuance grammar, the lift
+                family, appeals, and diagnostics. Permission nodes are listed per
+                form; see <a href="permissions.html">Permissions</a> for bundles.</p>
+
+            <h2 id="enforce-spec">Issuing sanctions</h2>
+            <pre><code>/enforce &lt;player&gt; [::layout] [@annotation...] [key=value...]</code></pre>
+            <p>Requires <code>minutiae.command.enforce</code>. The specification is
+                a free-order token stream; every token is one of four kinds:</p>
+            <table class="items">
+                <tr><td>::key</td>
+                    <td>Selects a configured <a href="layouts.html">layout</a>,
+                        which supplies the rule, measure, duration, escalation
+                        ladder, and default annotations. At most one per command.</td></tr>
+                <tr><td>@name(...)</td>
+                    <td>An <a href="annotations.html">annotation</a>: a behavioural
+                        flag or a directive. Parameters go in parentheses;
+                        <code>!@name</code> removes a layout-supplied annotation.</td></tr>
+                <tr><td>key=value</td>
+                    <td>A scalar override. Recognised keys are
+                        <code>duration</code> and <code>reason</code>. Quote values
+                        containing spaces: <code>reason="two words"</code>.</td></tr>
+                <tr><td>anything else</td>
+                    <td>The target player. Exactly one is required.</td></tr>
+            </table>
+
+            <div class="callout note"><span class="label">Note</span>
+                <p>A sanction needs a measure from exactly one source: a layout,
+                    <code>@measure(...)</code>, or <code>@remand</code>. A layout's
+                    measure is changed with <code>@commute(...)</code>, never with
+                    <code>@measure</code>.</p>
+            </div>
+
+            <h3 id="enforce-examples">Examples</h3>
+            <pre><code># Layout with its configured rule, duration, and escalation:
+/enforce Steve ::griefing
+
+# Manual sanction; temporal measures require a duration:
+/enforce Steve @measure(MUTE) duration=3h reason="Flooding chat"
+
+# Downgrade a layout's measure, citing an extra rule:
+/enforce Steve ::cheating @commute(SUSPENSION) duration=30d @count(P.4.1)
+
+# Preview without applying anything:
+/enforce Steve ::toxic @dry-run</code></pre>
+
+            <h2 id="lift">Lifting sanctions</h2>
+            <pre><code>/enforce lift &lt;id&gt; [vacate|pardon|served] [@annotation...] [reason...]</code></pre>
+            <p>Requires <code>minutiae.command.lift</code>. The kind decides what
+                the lifted record continues to mean; see
+                <a href="lift.html">Lifting sanctions</a> for the full model.</p>
+            <table class="items">
+                <tr><td>vacate</td>
+                    <td>The sanction was wrongly issued. The record leaves
+                        precedent entirely. This is the default when no kind is
+                        given.</td></tr>
+                <tr><td>pardon</td>
+                    <td>Rightly issued, remitted as clemency. Precedent is kept.
+                        Requires <code>minutiae.lift.pardon</code>.</td></tr>
+                <tr><td>served</td>
+                    <td>Terminated early as fulfilled. Precedent is kept.
+                        Requires <code>minutiae.lift.served</code>.</td></tr>
+            </table>
+            <p>Bare tokens after the kind form the reason. Admissible annotations:</p>
+            <table class="items">
+                <tr><td>@silent</td><td>Suppress the public lift announcement.</td></tr>
+                <tr><td>@dry-run</td><td>Preview the lift, including cascade extent.</td></tr>
+                <tr><td>@note(text)</td><td>Attach an internal case note.</td></tr>
+                <tr><td>@notify(ch...)</td><td>Route a lift notification to channels.</td></tr>
+                <tr><td>@probation(1w)</td>
+                    <td>Open a probation window on the lifted record. Incompatible
+                        with vacate, whose record leaves precedent.</td></tr>
+                <tr><td>@cascade</td>
+                    <td>Extend the lift over the whole joinder chain. Requires
+                        <code>minutiae.lift.cascade</code>.</td></tr>
+            </table>
+
+            <div class="callout warn"><span class="label">Permissions</span>
+                <p>Two gates depend on the target: lifting another staff member's
+                    sanction requires <code>minutiae.lift.foreign</code>, and
+                    lifting a ban requires <code>minutiae.lift.blocking</code>.
+                    Both apply to every entry path, including appeal acceptance.</p>
+            </div>
+
+            <h3 id="unlift">Reversing a lift</h3>
+            <pre><code>/enforce unlift &lt;id&gt; [reason...]</code></pre>
+            <p>Requires <code>minutiae.lift.reinstate</code>. Restores a lifted
+                sanction: an unexpired ban removes the subject from the server, and
+                behavioural constraints re-apply immediately.</p>
+
+            <h3 id="liftall">Bulk lift</h3>
+            <pre><code>/enforce liftall rule &lt;id&gt; [confirm [reason...]]
+/enforce liftall staff &lt;name&gt; [confirm [reason...]]</code></pre>
+            <p>Requires <code>minutiae.lift.bulk</code>. Without
+                <code>confirm</code> the command only reports how many sanctions
+                match. Bulk lifts are always vacaturs.</p>
+
+            <h2 id="inspection">Inspection</h2>
+            <table class="items">
+                <tr><td>/enforce info &lt;id&gt;</td>
+                    <td>Full view of one sanction: status, kind if lifted,
+                        remaining duration, issuer.</td></tr>
+                <tr><td>/enforce docket &lt;player&gt; [page]</td>
+                    <td>A player's complete sanction history.</td></tr>
+                <tr><td>/enforce appeals [page]</td>
+                    <td>Appeals awaiting review.</td></tr>
+                <tr><td>/enforce appeal &lt;id&gt; accept|deny [reason]</td>
+                    <td>Decide an appeal. Acceptance vacates the sanction.</td></tr>
+            </table>
+
+            <h2 id="appeal">Player appeals</h2>
+            <pre><code>/appeal &lt;sanction-id&gt; &lt;text&gt;</code></pre>
+            <p>Available to every player by default. A sanction can be appealed
+                once while pending; identifiers tab-complete from the player's own
+                recent sanctions.</p>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <p><code>/me-ban</code> exposes subsystem state: <code>ping</code>
+                (storage probe), <code>rules</code>, <code>layouts</code>,
+                <code>annotations</code>, <code>fingerprint &lt;player&gt;</code>,
+                <code>verbose on|off</code>, and <code>reload</code>. Each
+                subcommand carries its own node under
+                <code>minutiae.command.*</code>.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">Overview</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

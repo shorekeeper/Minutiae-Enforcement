@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/sum/Trigger">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trigger - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM Trigger sum type and its atomic, repeated, and sequence runtime plans.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Trigger::Atomic', href: '../ctor/Trigger.Atomic.html', group: 'Constructors' },
+            { label: 'Trigger::Repeated', href: '../ctor/Trigger.Repeated.html' },
+            { label: 'Trigger::Sequence', href: '../ctor/Trigger.Sequence.html' },
+            { label: 'GroupBy', href: 'GroupBy.html', group: 'Depends on' },
+            { label: 'Step', href: '../type/Step.html' },
+            { label: 'rule.trigger', href: '../keyword/rule.html#trigger', group: 'Consumed by' },
+            { label: 'Runtime model', href: '../guide/runtime.html', group: 'See also' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Trigger</h1>
+                <span class="entity-badge sum">sum</span>
+            </div>
+            <p class="entity-def">The closed set of firing preconditions that may occupy the trigger clause of an ALAM rule.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Built-in sum type</td></tr>
+                <tr><th>Constructors</th><td>3</td></tr>
+                <tr><th>Type namespace</th><td><code>Trigger</code></td></tr>
+                <tr><th>Value namespace</th><td><code>Trigger::*</code></td></tr>
+                <tr><th>Constructed</th><td>Compile time</td></tr>
+                <tr><th>Lowered to</th><td>Sealed <code>TriggerPlan</code> hierarchy</td></tr>
+                <tr><th>Runtime state</th><td>Constructor-dependent</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Trigger::Atomic                                             (1)
+
+Trigger::Repeated(count, within, group_by)                   (2)
+
+Trigger::Sequence(within, group_by, steps)                   (3)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Stateless admission of each candidate event.</span></li>
+                <li><span class="decl-no">(2)</span><span>Partitioned sliding recurrence window.</span></li>
+                <li><span class="decl-no">(3)</span><span>Partitioned ordered partial match with per-step guards and fact capture.</span></li>
+            </ul>
+
+            <pre class="gram"><code>trigger =
+      Trigger::Atomic
+    | Trigger::Repeated(
+          count,
+          within,
+          group-by
+      )
+    | Trigger::Sequence(
+          within,
+          group-by,
+          steps
+      ) ;</code></pre>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Rule-shape correspondence</span>
+                <table>
+                    <tr><th>Constructor</th><th>Required declared events</th><th>Additional requirement</th></tr>
+                    <tr>
+                        <td><code>Trigger::Atomic</code></td>
+                        <td>Exactly one</td>
+                        <td>None</td>
+                    </tr>
+                    <tr>
+                        <td><code>Trigger::Repeated</code></td>
+                        <td>Exactly one</td>
+                        <td>Positive finite span and count in 1 through 10000</td>
+                    </tr>
+                    <tr>
+                        <td><code>Trigger::Sequence</code></td>
+                        <td>Two or more</td>
+                        <td>One ordered step per event, with matching event types</td>
+                    </tr>
+                </table>
+            </div>
+            <ul class="constraint-list">
+                <li>The trigger expression is constructed under the <code>pure</code> effect allowance.</li>
+                <li>The complete expression must have nominal type <code>Trigger</code>.</li>
+                <li>A constructor with fields must receive every required field exactly once.</li>
+                <li>Window spans must be finite because the runtime stores epoch-millisecond boundaries.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The trigger expression is evaluated while the source unit is compiled. A rule does not retain trigger syntax or re-evaluate constructor arguments for each event. The resulting variant is validated against the rule's event list and lowered to primitive runtime plan data.</p>
+
+            <table>
+                <tr><th>Constructor</th><th>Guard timing</th><th>State</th><th>Firing condition</th></tr>
+                <tr>
+                    <td><code>Trigger::Atomic</code></td>
+                    <td>Rule guard on each candidate</td>
+                    <td>None</td>
+                    <td>The rule guard returns true</td>
+                </tr>
+                <tr>
+                    <td><code>Trigger::Repeated</code></td>
+                    <td>Rule guard before window insertion</td>
+                    <td>Timestamp ring per partition</td>
+                    <td>The admitted occurrence count reaches the threshold inside the span</td>
+                </tr>
+                <tr>
+                    <td><code>Trigger::Sequence</code></td>
+                    <td>Step guards during admission; rule guard after completion</td>
+                    <td>Partial index and captured events per partition</td>
+                    <td>All steps complete in order and the final rule guard returns true</td>
+                </tr>
+            </table>
+
+            <h3 id="atomic">Atomic dispatch</h3>
+            <p>An atomic rule receives each event independently. No state is retained between events. The event is adapted to the rule's one event record and passed directly to the rule guard.</p>
+
+            <h3 id="repeated">Repeated dispatch</h3>
+            <p>A repeated rule evaluates its rule guard before recording the occurrence. Only guard-admitted events enter the recurrence ring. A successful recurrence clears the ring, so the next firing starts from zero.</p>
+
+            <h3 id="sequence">Sequence dispatch</h3>
+            <p>A sequence evaluates the guard attached to the next expected <code>Step</code>. A matching event advances the partial state and is captured. When the last step completes, the rule guard and verdict receive one record per declared event.</p>
+            <p>If a later step is expected but the incoming event satisfies the first step, the partial match re-anchors at the new event. This prevents a stale partial from blocking overlapping sequences.</p>
+
+            <div class="normative">
+                <span class="normative-label">Throttle interaction</span>
+                <p>Passing a trigger does not by itself execute the verdict. The owning automaton must also acquire one unit from its per-minute throttle. A throttle breach self-mutes the entire automaton.</p>
+            </div>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The compile-time value is <code>Value.VariantV`. Evaluation validates its shape before lowering:</p>
+                <pre><code class="language-java">switch (trigger.ctor()) {
+    case "Atomic"   -&gt; validateAtomic(events);
+    case "Repeated" -&gt; validateRepeated(trigger, events);
+    case "Sequence" -&gt; validateSequence(trigger, events);
+}</code></pre>
+                <p>Lowering produces the sealed plan hierarchy:</p>
+                <pre><code class="language-java">public sealed interface TriggerPlan
+        permits TriggerPlan.Atomic,
+                TriggerPlan.Repeated,
+                TriggerPlan.Sequence {
+}</code></pre>
+                <ul>
+                    <li><code>TriggerPlan.Atomic</code> is a singleton and carries no fields.</li>
+                    <li><code>TriggerPlan.Repeated</code> carries an <code>int</code> count, a <code>long</code> millisecond span, and a partition selector.</li>
+                    <li><code>TriggerPlan.Sequence</code> carries a millisecond span, partition selector, and array of lowered steps.</li>
+                    <li><code>DispatchEngine</code> uses a Java pattern-switch over the sealed hierarchy, so adding another trigger form requires a deliberate compiler and runtime change.</li>
+                    <li>The engine indexes a sequence rule under every step event kind, while atomic and repeated rules are indexed under their single event kind.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity summary</span>
+                <dl>
+                    <dt>Atomic</dt>
+                    <dd>O(G) time and O(1) trigger storage, where G is rule-guard cost.</dd>
+                    <dt>Repeated</dt>
+                    <dd>O(G + count) time per admitted event and O(count) storage per active partition.</dd>
+                    <dt>Sequence</dt>
+                    <dd>O(SG + G + V) over a completed match, with O(S) captured events per active partition, where S is step count.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Login, Chat&gt; immediate_appeal {
+    condition {
+        trigger = Trigger::Sequence {
+            .within = 10m,
+            .group_by = GroupBy::Subject,
+            .steps = {
+                Step&lt;Login&gt; {
+                    .guard = Guard::Always,
+                },
+                Step&lt;Chat&gt; {
+                    .guard = (event) -&gt;
+                        event.message ~ "\\bappeal\\b";
+                },
+            },
+        };
+        guard = (login, chat) -&gt;
+            login.subject == chat.subject;
+    }
+    =&gt; verdict = appeal_verdict&lt;P.1.1&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The trigger clause produces a value of another type.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>A named constructor contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>A named constructor omits a required field.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>A positional constructor has the wrong arity.</td></tr>
+                <tr><td><code>E035</code></td><td>Elaboration</td><td>A constructor with fields is referenced without constructing it.</td></tr>
+                <tr><td><code>V001</code></td><td>Evaluation</td><td>An atomic or repeated trigger has an invalid rule shape, count, or span.</td></tr>
+                <tr><td><code>V002</code></td><td>Evaluation</td><td>A sequence has too few steps or does not correspond to the declared event list.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Trigger::Atomic</code></td><td>Stateless trigger form.</td></tr>
+                <tr><td><code>Trigger::Repeated</code></td><td>Partitioned recurrence tracking.</td></tr>
+                <tr><td><code>Trigger::Sequence</code></td><td>Ordered matching, re-anchoring, and fact capture.</td></tr>
+                <tr><td><code>GroupBy</code></td><td>Partition selection for stateful forms.</td></tr>
+                <tr><td><code>Step</code></td><td>One guarded event position in a sequence.</td></tr>
+                <tr><td><code>rule</code></td><td>Declaration containing the trigger clause.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

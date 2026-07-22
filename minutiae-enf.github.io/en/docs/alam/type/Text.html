@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/type/Text">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Text - ALAM reference</title>
+    <meta name="description" content="Reference for ALAM text values, escapes, equality, and Java regular-expression matching.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Bool', href: 'Bool.html', group: 'Primitive types' },
+            { label: 'Account', href: 'Account.html' },
+            { label: 'Rule', href: 'Rule.html' },
+            { label: 'Chat', href: '../event/Chat.html', group: 'Used by' },
+            { label: 'GroupBy::Field', href: '../ctor/GroupBy.Field.html' },
+            { label: 'Annotation::Reason', href: '../ctor/Annotation.Reason.html' },
+            { label: 'V015', href: '../diag/V015.html', group: 'Diagnostics' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Text</h1>
+                <span class="entity-badge type">type</span>
+            </div>
+            <p class="entity-def">An immutable Unicode string with exact equality and Java regular-expression search through the matching operator.</p>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="gram"><code>text-type = "Text" ;
+
+text-literal =
+    '"',
+    { character - '"' - "\"
+    | "\" ( '"' | "\" | "n" | "t" | "r" ) },
+    '"' ;</code></pre>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>A text literal must end with a closing double quote.</li>
+                <li>Supported escapes are <code>\"</code>, <code>\\</code>, <code>\n</code>, <code>\t</code>, and <code>\r</code>.</li>
+                <li>Equality requires another <code>Text</code> value.</li>
+                <li>The <code>~</code> operator requires <code>Text</code> on both sides.</li>
+                <li><code>Text</code> has no ordering, concatenation, indexing, or interpolation operator in the current language.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <table class="items">
+                <tr><td><code>left == right</code></td><td>Exact Java string equality.</td></tr>
+                <tr><td><code>left != right</code></td><td>Negation of exact equality.</td></tr>
+                <tr><td><code>text ~ pattern</code></td><td>Compiles <code>pattern</code> as a Java regular expression and calls <code>find()</code> on <code>text</code>.</td></tr>
+            </table>
+            <p>The matching operator searches for a matching region. It does not require the complete text to match. Use anchors such as <code>^</code> and <code>$</code> when full-string matching is required.</p>
+            <p>Regular expressions follow <code>java.util.regex.Pattern</code>, including Java escaping rules after ALAM string escapes have been decoded.</p>
+
+            <h3 id="java-implementation">Under the Java implementation</h3>
+            <p>Escape decoding occurs in the lexer. The decoded string is stored in a small string pool referenced by the token buffer. The parser places the decoded value directly in <code>Expr.TextLit</code>.</p>
+            <p>Text values are represented by <code>Value.TextV(String)</code>. Each use of <code>~</code> compiles the pattern when the expression is evaluated. The current implementation does not cache compiled regular expressions.</p>
+            <p>An invalid pattern produces <code>V015</code> during compile-time evaluation. During runtime guard evaluation, the same failure is contained and treated as an unsatisfied guard.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Chat&gt; repeated_caps {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            event.message ~ "^[A-Z ]{20,}$";
+    }
+    =&gt; verdict = warning_verdict&lt;P.2.1&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="items diag-list">
+                <tr><td><code>L002</code></td><td>A text literal is not terminated.</td></tr>
+                <tr><td><code>L003</code></td><td>A text literal contains an unsupported escape.</td></tr>
+                <tr><td><code>E003</code></td><td>A text position receives a different type.</td></tr>
+                <tr><td><code>E019</code></td><td>The matching operator receives a non-text operand.</td></tr>
+                <tr><td><code>E032</code></td><td>Equality compares text with another type.</td></tr>
+                <tr><td><code>V015</code></td><td>The right operand of <code>~</code> is not a valid Java regular expression.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Chat</code></td><td>Event exposing the message body as text.</td></tr>
+                <tr><td><code>GroupBy::Field</code></td><td>Accepts a text field name used for runtime partitioning.</td></tr>
+                <tr><td><code>Annotation::Reason</code></td><td>Stores sanction reason text.</td></tr>
+                <tr><td><code>V015</code></td><td>Invalid text pattern diagnostic.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

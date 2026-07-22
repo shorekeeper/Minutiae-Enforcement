@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/guide/lexical">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALAM lexical structure - Minutiae Enforcement</title>
+    <meta name="description" content="ALAM tokens, maximal-munch rules, literals, comments, and lexical diagnostics.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Lexical structure</h1>
+            <p class="lede">ALAM is tokenized by a single left-to-right scan with maximal munch, bounded lookahead, and no regular expressions or backtracking in the Java lexer.</p>
+
+            <h2 id="tokens">Tokens</h2>
+            <pre class="gram"><code>token = keyword | identifier | wildcard | integer | real
+      | duration | text | rule-identifier
+      | punctuation | operator ;
+
+identifier = identifier-start, { identifier-part } ;
+identifier-start = letter | "_" ;
+identifier-part = letter | digit | "_" ;
+
+wildcard = "_" ;</code></pre>
+            <p>An identifier that exactly matches a keyword is emitted as that keyword. A single underscore is the wildcard. Longer names containing underscores remain identifiers.</p>
+
+            <h2 id="literals">Literals</h2>
+            <table class="items">
+                <tr>
+                    <td>integer</td>
+                    <td>A non-empty decimal digit sequence decoded to a signed 64-bit value during lexing.</td>
+                </tr>
+                <tr>
+                    <td>real</td>
+                    <td>Digits, one decimal point, and at least one digit after the point. A leading sign is a separate unary operator.</td>
+                </tr>
+                <tr>
+                    <td>duration</td>
+                    <td>One or more alternating digit and unit segments. Units are <code>s</code>, <code>m</code>, <code>h</code>, <code>d</code>, and <code>w</code>.</td>
+                </tr>
+                <tr>
+                    <td>text</td>
+                    <td>A double-quoted string. Supported escapes are <code>\"</code>, <code>\\</code>, <code>\n</code>, <code>\t</code>, and <code>\r</code>.</td>
+                </tr>
+                <tr>
+                    <td>rule identifier</td>
+                    <td>The letter <code>P</code> followed immediately by one or more dot-decimal segments, for example <code>P.2.1</code>.</td>
+                </tr>
+            </table>
+
+            <h3 id="maximal-munch">Maximal-munch refinements</h3>
+            <p>A digit run followed immediately by a duration unit begins one duration token. The complete span must preserve strict digit-unit alternation. Therefore <code>3hx</code> is a malformed duration, not a valid <code>3h</code> followed by an identifier.</p>
+            <p>The word <code>P</code> begins a rule identifier only when the next two characters are a dot and a digit. Otherwise it remains an ordinary identifier.</p>
+
+            <h2 id="comments">Whitespace and comments</h2>
+            <pre class="gram"><code>line-comment  = "//", { character }, newline ;
+block-comment = "/*", { character }, "*/" ;</code></pre>
+            <p>Whitespace and comments are discarded between tokens. Block comments do not nest. An unterminated block comment consumes the remaining source and produces <code>L006</code>.</p>
+
+            <h2 id="operators">Operators and punctuation</h2>
+            <pre class="gram"><code>{ } ( ) [ ] , ;
+:: : -> => = == != &lt; &gt; &lt;= &gt;=
+&amp;&amp; || ! .. . + - * / ~</code></pre>
+            <p>A lone ampersand produces <code>L007</code>; a lone vertical bar produces <code>L008</code>. The lexer does not reinterpret them as partial boolean operators.</p>
+
+            <h2 id="recovery">Recovery under the Java implementation</h2>
+            <p>Tokens are stored in parallel primitive arrays inside <code>TokenBuffer</code>. Each slot carries the token kind ordinal, source offsets, line, column, numeric payload, and optional string-pool index. Identifiers and keywords are not allocated during classification; their text is materialized from the retained source only when a later phase requests it.</p>
+            <p>A lexical error emits an <code>ERROR</code> token and scanning continues. The stream always terminates with an <code>EOF</code> token, so the parser can retain valid sibling declarations after a malformed span.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Duration warning_window = 1h30m;
+
+rule&lt;Chat&gt; long_message {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt; event.length &gt; 120;
+    }
+    =&gt; verdict = make_warning&lt;P.2.1&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="items diag-list">
+                <tr><td><code>L001</code></td><td>Unexpected character.</td></tr>
+                <tr><td><code>L002</code></td><td>Unterminated text literal.</td></tr>
+                <tr><td><code>L003</code></td><td>Invalid text escape.</td></tr>
+                <tr><td><code>L004</code></td><td>Malformed duration literal.</td></tr>
+                <tr><td><code>L005</code></td><td>Integer literal exceeds the signed 64-bit range.</td></tr>
+                <tr><td><code>L006</code></td><td>Unterminated block comment.</td></tr>
+                <tr><td><code>L007</code></td><td>Stray ampersand.</td></tr>
+                <tr><td><code>L008</code></td><td>Stray vertical bar.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

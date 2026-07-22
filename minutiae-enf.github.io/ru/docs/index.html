@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="ru" data-slug="docs/index">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Документация - Minutiae Enforcement</title>
+    <meta name="description" content="Документация Minutiae Enforcement: установка, модерация, администрирование.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Документация"></nav>
+
+    <main>
+        <article class="article-body">
+            <h1>Документация</h1>
+            <p class="lede">Всё — от первой установки до массовых амнистий.
+                Если вы здесь впервые, начните с двух страниц первого ряда;
+                остальное — справочный материал, к которому вы будете
+                возвращаться.</p>
+
+            <div class="feature-grid">
+                <div class="feature">
+                    <h3><a href="getting-started.html">Начало работы</a></h3>
+                    <p>Требования, установка, первый запуск и первая санкция
+                        примерно за пять минут.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="configuration.html">Конфигурация</a></h3>
+                    <p>Каждая секция <code>config.yml</code>: хранилище,
+                        объявления, ранги, уведомления, захват чата.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="commands.html">Команды</a></h3>
+                    <p>Полная грамматика <code>/enforce</code>, семейство
+                        снятия, апелляции и диагностика.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="annotations.html">Справочник аннотаций</a></h3>
+                    <p>Все 32 аннотации: параметры, область применения, права
+                        и матрица связей.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="layouts.html">Шаблоны и эскалация</a></h3>
+                    <p>Переиспользуемые шаблоны санкций, наследование, лестницы
+                        эскалации и затухание прецедента.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="lift.html">Снятие санкций</a></h3>
+                    <p>Аннулирование, помилование и зачёт срока; каскады,
+                        массовые снятия и откат ошибочного снятия.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="permissions.html">Права</a></h3>
+                    <p>Дерево узлов, бандлы staff и admin, и как на самом деле
+                        работают операторские значения по умолчанию.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="localization.html">Локализация</a></h3>
+                    <p>Языковые пакеты, локаль каждого игрока, грамматические
+                        формы и встроенный резервный слой.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="web-panel.html">Веб-панель</a></h3>
+                    <p>Обозреватель дел в стиле реестра: токены, роли и что
+                        может и чего не может токен записи.</p>
+                </div>
+                <div class="feature">
+                    <h3><a href="fingerprint.html">Детект обхода банов</a></h3>
+                    <p>Как модель улик оценивает входы, что значат сигналы и
+                        как настраивать пороги.</p>
+                </div>
+            </div>
+
+            <h2 id="conventions">Обозначения в документации</h2>
+            <table class="items">
+                <tr><td>&lt;угловые&gt;</td>
+                    <td>Обязательный аргумент, вместо которого подставляется
+                        значение.</td></tr>
+                <tr><td>[квадратные]</td>
+                    <td>Необязательный аргумент.</td></tr>
+                <tr><td>a|b</td>
+                    <td>Взаимоисключающие варианты.</td></tr>
+                <tr><td>P.3.2</td>
+                    <td>Идентификатор правила из вашего
+                        <code>rules.yml</code>. Примеры используют поставляемый
+                        набор правил.</td></tr>
+                <tr><td>1h, 7d, 1w2d</td>
+                    <td>Сроки: секунды, минуты, часы, дни, недели; сегменты
+                        комбинируются. <code>permanent</code> — отдельный
+                        литерал, а не срок.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">Главная</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="На этой странице"></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/schema">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>schema - ALAM reference</title>
+    <meta name="description" content="Detailed reference for ALAM nominal record schemas, ordered mandatory fields, type resolution, construction, storage, and Java representation.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'matrix', href: 'matrix.html', group: 'Consumed by' },
+            { label: 'transform', href: 'transform.html' },
+            { label: 'with', href: 'with.html' },
+            { label: 'list', href: '../type/list.html', group: 'Related types' },
+            { label: 'function', href: '../type/function.html' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'E002', href: '../diag/E002.html', group: 'Diagnostics' },
+            { label: 'E004', href: '../diag/E004.html' },
+            { label: 'E005', href: '../diag/E005.html' },
+            { label: 'E014', href: '../diag/E014.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>schema</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Declares a nominal record type with an ordered list of named mandatory fields.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Top-level type declaration</td></tr>
+                <tr><th>Introduces</th><td>One global schema type name</td></tr>
+                <tr><th>Value binding</th><td>None</td></tr>
+                <tr><th>Field order</th><td>Declaration order, semantically significant</td></tr>
+                <tr><th>Field optionality</th><td>None; every field is mandatory at construction</td></tr>
+                <tr><th>Type identity</th><td>Nominal by schema name</td></tr>
+                <tr><th>Runtime representation</th><td><code>Type.Rec</code> plus ordered <code>Value.RecordV</code> fields</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>schema name {
+    field-declarations
+}</code></pre>
+
+            <pre class="gram"><code>schema-declaration =
+    "schema" identifier "{"
+        { field-declaration }
+    "}" ;
+
+field-declaration =
+    type field-name ";" ;
+
+field-name =
+      identifier
+    | keyword ;</code></pre>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Part</th><th>Form</th><th>Description</th></tr>
+                <tr>
+                    <td>Schema name</td>
+                    <td>Identifier</td>
+                    <td>Nominal type identity entered into the global symbol table.</td>
+                </tr>
+                <tr>
+                    <td>Field type</td>
+                    <td>Resolvable source type</td>
+                    <td>Exact type required of the corresponding value field.</td>
+                </tr>
+                <tr>
+                    <td>Field name</td>
+                    <td>Identifier or keyword</td>
+                    <td>Member name used by construction, field access, <code>with</code>, matrix row ordering, and transform logic.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The schema name duplicates an earlier top-level declaration.</li>
+                    <li>The schema name collides with a built-in type-namespace name.</li>
+                    <li>A field name is duplicated within the schema.</li>
+                    <li>A field type is unknown at the declaration point.</li>
+                    <li>A field type is applied with unsupported type arguments.</li>
+                </ol>
+            </div>
+
+            <ul class="constraint-list">
+                <li>A schema may contain zero fields.</li>
+                <li>Field names may use reserved keywords because the parser knows that only a field name can occur after a field type.</li>
+                <li>A schema may refer only to types already available at its declaration point.</li>
+                <li>Self-recursive and mutually recursive schemas are not representable under declaration-before-use.</li>
+                <li>Two schemas with identical fields remain distinct types when their names differ.</li>
+                <li>Reordering fields changes positional matrix semantics even when field names and types are otherwise unchanged.</li>
+            </ul>
+
+            <h3 id="available-types">Types available in source schemas</h3>
+            <p>The current source type namespace includes:</p>
+            <pre class="synopsis"><code>Bool
+Int
+Real
+Text
+Duration
+Rule
+Account
+Measure
+Sanction
+Layout
+earlier user schemas
+Rule&lt;EventTypes...&gt;
+T[]</code></pre>
+
+            <p>Other built-in sums such as <code>Trigger</code>, <code>Annotation</code>, <code>Escalation</code>, <code>Attribution</code>, <code>DryRun</code>, and <code>GroupBy</code> have constructor path roots in the value namespace but are not registered as general source type names by the current <code>Builtins.typeNamed</code> table.</p>
+
+            <div class="callout note">
+                <span class="label">Namespace detail</span>
+                <p>A value path such as <code>Trigger::Atomic</code> may exist even though <code>Trigger</code> is not accepted as a field type in a user schema. Type names and constructor path roots are resolved by separate tables.</p>
+            </div>
+
+            <h2 id="semantics">Semantics</h2>
+
+            <h3 id="nominal-identity">Nominal identity</h3>
+            <p>A schema's name is its type identity. Field structure does not create structural equivalence.</p>
+
+            <pre><code class="language-alam">schema Left {
+    Int value;
+}
+
+schema Right {
+    Int value;
+}</code></pre>
+
+            <p><code>Left</code> and <code>Right</code> are not assignable despite having identical fields.</p>
+
+            <h3 id="field-order">Field order</h3>
+            <p>Fields retain source order. This order controls:</p>
+            <ul>
+                <li>the positional meaning of each <code>matrix</code> cell;</li>
+                <li>the internal ordered storage of every record value;</li>
+                <li>the ordering used when a named record construction is normalized;</li>
+                <li>the index used by field access and <code>with</code> updates.</li>
+            </ul>
+
+            <div class="normative">
+                <span class="normative-label">Compatibility consequence</span>
+                <p>Changing field order is a source compatibility change for every existing matrix over that schema. Matrix rows are positional and do not retain field labels.</p>
+            </div>
+
+            <h3 id="construction">Construction</h3>
+            <p>A schema value is constructed by naming the schema and supplying every field:</p>
+            <pre><code class="language-alam">TariffRow {
+    .measure = Measure::MUTE,
+    .span = 3h,
+    .priority = 1,
+}</code></pre>
+
+            <p>Named initializers may appear in any source order. Evaluation reorders them to schema order before creating the record value.</p>
+            <p>An anonymous record literal may be used when the surrounding position supplies the expected schema type:</p>
+            <pre><code class="language-alam">const TariffRow row = {
+    .measure = Measure::MUTE,
+    .span = 3h,
+    .priority = 1,
+};</code></pre>
+
+            <h3 id="mandatory-fields">Mandatory fields</h3>
+            <p>Every declared field must be supplied. ALAM has no optional fields, default expressions, null value, field omission, or automatic zero initialization for record construction.</p>
+            <p>Neutral values exist only during platform event adaptation. They are not injected into user schema constructions.</p>
+
+            <h3 id="field-access">Field access</h3>
+            <p>For a value <code>record</code> of schema type, <code>record.name</code> returns the field value. The receiver's static nominal type determines whether the field exists.</p>
+            <p>The parser admits keywords as member names after a dot, so fields such as <code>rule</code>, <code>guard</code>, or <code>with</code> remain accessible.</p>
+
+            <h3 id="functional-update">Functional update</h3>
+            <p><code>with</code> creates another value of the same nominal schema. It copies the ordered field list and replaces selected indexes. It cannot add fields or change the schema type.</p>
+
+            <h3 id="no-value-binding">No value binding</h3>
+            <p>A schema declaration contributes only a type symbol. It does not bind a value named after the schema in the ordinary evaluation environment.</p>
+            <p>The same source spelling is nevertheless recognized as a construction target by elaboration when followed by a record body.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p>A schema declaration contains no expression and has no runtime effect. Expressions used to construct schema values inherit the allowance of their surrounding position.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>Elaboration builds the ordered field list and rejects duplicates:</p>
+                <pre><code class="language-java">final List&lt;Field&gt; fields =
+    new ArrayList&lt;&gt;(schema.fields().size());
+
+final Set&lt;String&gt; seen =
+    new HashSet&lt;&gt;(8);
+
+for (final Decl.Schema.Field field
+        : schema.fields()) {
+    if (!seen.add(field.name())) {
+        error(
+            "E014",
+            field.pos(),
+            "duplicate field '"
+                + field.name()
+                + "' in schema '"
+                + schema.name()
+                + "'"
+        );
+
+        throw Abort.INSTANCE;
+    }
+
+    fields.add(new Field(
+        field.name(),
+        resolveType(field.type())
+    ));
+}</code></pre>
+
+                <p>Built-in type-name collisions are checked before global registration:</p>
+                <pre><code class="language-java">if (Builtins.typeNamed(
+        schema.name()) != null) {
+    error(
+        "E014",
+        schema.pos(),
+        "schema name '"
+            + schema.name()
+            + "' collides with a built-in type"
+    );
+
+    throw Abort.INSTANCE;
+}</code></pre>
+
+                <p>The nominal type is one Java record:</p>
+                <pre><code class="language-java">final Rec recordType =
+    new Rec(
+        schema.name(),
+        List.copyOf(fields)
+    );
+
+define(
+    schema.name(),
+    new Symbol.SchemaSym(
+        schema.name(),
+        recordType,
+        schema.pos()
+    ),
+    schema.pos()
+);</code></pre>
+
+                <p>Named construction is normalized into schema order:</p>
+                <pre><code class="language-java">final Map&lt;String, Value&gt; byName =
+    new HashMap&lt;&gt;(
+        literal.fields().size() * 2
+    );
+
+for (final Expr.FieldInit field
+        : literal.fields()) {
+    byName.put(
+        field.name(),
+        eval(field.value(), env)
+    );
+}
+
+final List&lt;Value&gt; ordered =
+    new ArrayList&lt;&gt;(
+        recordType.fields().size()
+    );
+
+for (final Type.Field field
+        : recordType.fields()) {
+    ordered.add(byName.get(field.name()));
+}
+
+return new Value.RecordV(
+    recordType,
+    List.copyOf(ordered)
+);</code></pre>
+
+                <p>Field lookup is currently linear in field count:</p>
+                <pre><code class="language-java">public int fieldIndex(
+        final String fieldName) {
+    for (int i = 0;
+            i &lt; fields.size();
+            i++) {
+        if (fields.get(i)
+                .name()
+                .equals(fieldName)) {
+            return i;
+        }
+    }
+
+    return -1;
+}</code></pre>
+
+                <ul>
+                    <li><code>Type.Rec</code> and <code>Value.RecordV</code> are immutable after publication.</li>
+                    <li>A record value stores a direct reference to its nominal type.</li>
+                    <li>Aggregate values do not use Java reflection.</li>
+                    <li>Field lookup does not currently maintain a name-to-index hash table.</li>
+                    <li>Type identity compares record names, relying on global duplicate-name rejection for soundness.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Schema elaboration</dt>
+                    <dd>Expected O(F), where F is field count.</dd>
+                    <dt>Named construction</dt>
+                    <dd>Expected O(F) for value evaluation, temporary name mapping, and ordered materialization.</dd>
+                    <dt>Field access</dt>
+                    <dd>O(F) name lookup, then O(1) value-list indexing.</dd>
+                    <dt>with update</dt>
+                    <dd>O(F + U × F), where U is updated-field count under linear field lookup.</dd>
+                    <dt>Value storage</dt>
+                    <dd>O(F) references per record value, plus one shared type object.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">schema TariffRow {
+    Text key;
+    Rule rule;
+    Measure measure;
+    Duration span;
+    Int priority;
+}
+
+const TariffRow default_tariff = TariffRow {
+    .key = "chat-flood",
+    .rule = P.2.1,
+    .measure = Measure::MUTE,
+    .span = 3h,
+    .priority = 10,
+};</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>The schema name, field type, field name, semicolon, or closing brace is missing.</td></tr>
+                <tr><td><code>E002</code></td><td>Elaboration</td><td>A field type is unknown or uses unsupported type arguments.</td></tr>
+                <tr><td><code>E014</code></td><td>Elaboration</td><td>The schema name duplicates a global or built-in type name, or a field name is duplicated.</td></tr>
+            </table>
+
+            <p>Errors in later value constructions are attributed to those constructions:</p>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>A field initializer has the wrong type.</td></tr>
+                <tr><td><code>E004</code></td><td>A construction or update names an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>A construction omits one or more mandatory fields.</td></tr>
+                <tr><td><code>P010</code></td><td>A record body initializes one field more than once.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>matrix</code></td><td>Declares ordered positional rows conforming to one schema.</td></tr>
+                <tr><td><code>transform</code></td><td>Commonly consumes a schema row and produces a layout or rule.</td></tr>
+                <tr><td><code>with</code></td><td>Creates a functional update of a schema value.</td></tr>
+                <tr><td><code>list</code></td><td>Homogeneous invariant aggregate type used by matrices and schema fields.</td></tr>
+                <tr><td><code>Rule</code></td><td>Primitive and structural rule types available to schema fields.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

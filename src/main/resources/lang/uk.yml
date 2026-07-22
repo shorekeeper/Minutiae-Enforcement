@@ -1,0 +1,337 @@
+# ==========================================================================
+# Minutiae Enforcement - український мовний пакет.
+# Формат: легасі-кольори '&' з hex &#rrggbb. Плейсхолдери вигляду {name}.
+# Палітра ідентична en.yml (primary #8AFFEB).
+# ==========================================================================
+
+# ==========================================================================
+# СИСТЕМА ТА ФОРМАТУВАННЯ
+# ==========================================================================
+
+prefix: "&#8AFFEB&lME &8» &r"
+
+reload:
+  done: "{prefix}&#79FFB0Перезавантаження завершено &8· &#E8EEF0{ok}&#7C93A0 успішно, &#E8EEF0{failed}&#7C93A0 з помилкою"
+
+pref:
+  verbose-on: "{prefix}&#79FFB0Детальні звіти увімкнено"
+  verbose-off: "{prefix}&#7C93A0Детальні звіти вимкнено"
+  console: "{prefix}&#7C93A0Консоль завжди отримує детальні звіти"
+
+rank:
+  staff: "&#7C93A0Персонал"
+  staff.by: "&#7C93A0персоналу"
+  console: "&#7C93A0Консоль"
+  console.by: "&#7C93A0консолі"
+  administrator: "&#FF7A7AАдміністратор"
+  administrator.by: "&#FF7A7Aадміністратора"
+  moderator: "&#8AFFEBМодератор"
+  moderator.by: "&#8AFFEBмодератора"
+  helper: "&#79FFB0Хелпер"
+  helper.by: "&#79FFB0хелпера"
+
+status:
+  active: "активна"
+  inactive: "неактивна"
+  stayed: "відкладена (очікує)"
+  lifted: "знята: {actor} ({kind})"
+
+duration:
+  permanent: "назавжди"
+  expired: "минула"
+  none: "-"
+  unit:
+    weeks: "тиж"
+    days: "д"
+    hours: "год"
+    minutes: "хв"
+    seconds: "с"
+
+measure:
+  warn: "Попередження"
+  censure: "Догана"
+  mute: "Мут"
+  kick: "Кік"
+  quarantine: "Карантин"
+  suspension: "Тимчасовий бан"
+  custody: "Перманентний бан"
+
+# ==========================================================================
+# ЗАСТОСУВАННЯ САНКЦІЙ ТА КОМАНДИ ПЕРЕГЛЯДУ
+# ==========================================================================
+
+enforce:
+  help:
+    - "&#8AFFEB&l  Minutiae Enforcement"
+    - "&8  ───────────────────────────────"
+    - "&#7C93A0  /enforce &#E8EEF0<гравець> &#8AFFEB::<шаблон> &#7C93A0[модифікатори]"
+    - "&#7C93A0  /enforce &#E8EEF0<гравець> &#8AFFEB@measure(M) &#7C93A0duration=<термін>"
+    - "&#7C93A0  /enforce &#8AFFEBlift &#E8EEF0<id> &#7C93A0[причина]"
+    - "&#7C93A0  /enforce &#8AFFEBinfo &#E8EEF0<id>"
+    - "&#7C93A0  /enforce &#8AFFEBdocket &#E8EEF0<гравець>"
+    - "&#7C93A0  /enforce &#8AFFEBappeals&7 · &#8AFFEBappeal &#E8EEF0<id> accept|deny"
+    - "&8  ─── Модифікатори ───"
+    - "&#7C93A0  @flag  !@flag  ключ=значення"
+    - "&#7C93A0  @commute(M)  &8Змінити міру шаблону"
+    - "&#7C93A0  @count(P.X)  &8Додати пункт правил"
+    - "&#7C93A0  @weave(#id)  &8Приєднати до справи"
+    - "&#7C93A0  @amend(id)   &8Змінити санкцію"
+    - "&#7C93A0  @probation(d)&8 Відкрити вікно пробації"
+    - "&#7C93A0  @stay(d) @remand @dry-run"
+    - "&8  Міри     &7 {measures}"
+    - "&8  Шаблони  &7 {layouts}"
+
+sanction:
+  applied: "{prefix}&#79FFB0&lСанкцію застосовано"
+  stayed: "{prefix}&#FFC061&lСанкцію відкладено"
+  warning: "{prefix}&#FFC061&lВинесено попередження"
+  amended: "{prefix}&#79FFB0Санкцію &#E8EEF0#{id} &#79FFB0змінено &8· &#8AA6B0{diff}"
+  dry-run: "{prefix}&#FFD479&lТестовий розрахунок &8· &#7C93A0не застосовано"
+  dry-run-footer: "&8  Нічого не збережено"
+  compact: "{prefix}&#79FFB0✔ &#E8EEF0{target} &8→ &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+  suspended: "{prefix}&#FFC061&lУмовну санкцію записано"
+  layout-manual: "<вручну>"
+  flag-implied: "@{name}(неявно)"
+  line:
+    target: "&#7C93A0  Ціль       &#E8EEF0{target}"
+    measure: "&#7C93A0  Міра       &#8AFFEB{measure}"
+    layout: "&#7C93A0  Шаблон     &#B8C6CE{layout}"
+    rule: "&#7C93A0  Правило    &#B8C6CE{rule}"
+    reason: "&#7C93A0  Причина    {reason}"
+    duration: "&#7C93A0  Термін     &#FFD479{duration}"
+    duration-escalated: "&#7C93A0  Термін     &#FFD479{duration} &8(ескалація · до цього {prior})"
+    warning: "&#7C93A0  Попередж.  &#FFC061{count}&7/&#FFC061{required}"
+    stay: "&#7C93A0  Відстрочка &#FFD479{stay}"
+    flags: "&#7C93A0  Прапорці   &#8AA6B0{flags}"
+    id: "&8  ID         #{id}"
+    stays-activated: "&#8AFFEB  ↑ Активовано відкладених: {count}"
+    suspended-activated: "&#8AFFEB  ↑ Активовано умовних санкцій: {count}"
+
+reason:
+  display: "&#FFD479{short}"
+  card:
+    - "&#8AFFEB&lДеталі Санкції"
+    - "&8─────────────────"
+    - "&#7C93A0Причина  &#E8EEF0{reason}"
+    - "&#7C93A0Міра     &#8AFFEB{measure}"
+    - "&#7C93A0Правило  &#B8C6CE{rule}"
+    - "&#7C93A0Термін   &#FFD479{duration}"
+    - "&#7C93A0Модер.   &#E8EEF0{staff}"
+    - "&#7C93A0Коли     &#8AA6B0{when}"
+
+info:
+  header: "{prefix}&#8AFFEB&lСанкція #{id}"
+  status: "&#7C93A0  Статус     &#E8EEF0{status}"
+  staff: "&#7C93A0  Модератор  &#E8EEF0{staff}"
+
+docket:
+  header: "{prefix}&#8AFFEB&lСправа &8· &#E8EEF0{player} &#7C93A0(всього {total} · стор. {page}/{pages})"
+  empty: "&#7C93A0  Записів немає"
+  entry: "&8  #{id} &#8AFFEB{measure} &#B8C6CE{rule} &8[{status}] &8· {reason}"
+  woven: "&8      ↳ У складі справи #{parent}"
+  unknown: "{prefix}&#FF7A7AГравець невідомий або не в кеші &8· &#E8EEF0{player}"
+
+# ==========================================================================
+# ЗНЯТТЯ ТА ВІДНОВЛЕННЯ САНКЦІЙ
+# ==========================================================================
+
+lift:
+  success: "{prefix}&#79FFB0Знято &#E8EEF0#{id} &8({kind}) &8· &#E8EEF0{target} &#8AFFEB{measure} &8модер. &#E8EEF0{actor}"
+  not-found: "{prefix}&#FF7A7AНемає санкції з ID &#E8EEF0#{id}"
+  already: "{prefix}&#7C93A0Санкцію &#E8EEF0#{id}&#7C93A0 вже знято"
+  broadcast: "{prefix}&#E8EEF0{target}&#7C93A0: {measure} знято &8({kind}) &#7C93A0· {rank} &#E8EEF0{staff}"
+  deny-kind: "{prefix}&#FF7A7AЗняття Відхилено &8· &#C9D6DBНедостатньо прав для виду '{kind}'"
+  deny-foreign: "{prefix}&#FF7A7AЗняття Відхилено &8· &#C9D6DBСанкцію видав {staff}"
+  deny-blocking: "{prefix}&#FF7A7AЗняття Відхилено &8· &#C9D6DBНедостатньо прав, щоб зняти: {measure}"
+  unknown-token: "{prefix}&#FF7A7AПомилка Зняття &8· &#C9D6DB@{name} недопустима при знятті"
+  probation-vacate: "{prefix}&#FF7A7AПомилка Зняття &8· &#C9D6DB@probation вимагає pardon або served: анульований запис виходить із прецеденту"
+  preview: "{prefix}&#FFD479&lТестовий Розрахунок &8· &#7C93A0буде знято &#E8EEF0#{id} &#E8EEF0{target} &#8AFFEB{measure} &8({kind})"
+  preview-cascade: "&#7C93A0  Каскад додатково зніме вплетених справ: &#E8EEF0{count}"
+  cascade-done: "{prefix}&#79FFB0Ланцюжок знято &8· &#E8EEF0{count}&#79FFB0 санкцій всього"
+  bulk-preview: "{prefix}&#FFC061Під критерій '{value}' підпадає санкцій: {count} &8· додайте &#E8EEF0confirm&8 для виконання"
+  bulk-empty: "{prefix}&#7C93A0Нічого знімати за критерієм '{value}'"
+  bulk-done: "{prefix}&#79FFB0Масове зняття завершено &8· анульовано санкцій: &#E8EEF0{count}&#79FFB0 за '{value}'"
+  kind:
+    vacate: "анульовано"
+    pardon: "помилувано"
+    time-served: "термін зараховано"
+
+unlift:
+  success: "{prefix}&#79FFB0Відновлено &#E8EEF0#{id} &8· &#E8EEF0{target}"
+  not-lifted: "{prefix}&#7C93A0Санкцію &#E8EEF0#{id}&#7C93A0 не знято"
+
+# ==========================================================================
+# СИСТЕМА АПЕЛЯЦІЙ
+# ==========================================================================
+
+appeal:
+  player-only: "{prefix}&#FF7A7AПодати апеляцію може тільки гравець."
+  not-yours: "{prefix}&#FF7A7AЦя санкція не ваша."
+  not-appealable: "{prefix}&#FF7A7AЦю санкцію не можна оскаржити."
+  already-lifted: "{prefix}&#7C93A0Цю санкцію вже знято."
+  duplicate: "{prefix}&#FFC061Апеляція щодо санкції &#E8EEF0#{id}&#FFC061 вже розглядається."
+  submitted: "{prefix}&#79FFB0Апеляцію &#E8EEF0#{appeal}&#79FFB0 подано щодо санкції &#E8EEF0#{id}&#79FFB0."
+  not-found: "{prefix}&#FF7A7AНемає апеляції з ID &#E8EEF0#{id}"
+  already-decided: "{prefix}&#7C93A0Щодо апеляції &#E8EEF0#{id}&#7C93A0 вже винесено рішення."
+  accepted: "{prefix}&#79FFB0Апеляцію &#E8EEF0#{id}&#79FFB0 задоволено &8· санкцію знято"
+  denied: "{prefix}&#7C93A0Апеляцію &#E8EEF0#{id}&#7C93A0 відхилено"
+  lift-reason: "апеляцію задоволено"
+  status:
+    accepted: "задоволено"
+    denied: "відхилено"
+
+appeals:
+  header: "{prefix}&#8AFFEB&lАпеляції в Очікуванні &#7C93A0(всього {total} · стор. {page}/{pages})"
+  empty: "&#7C93A0  Апеляцій на розгляді немає"
+  entry: "&8  #{appeal} &#7C93A0санкція #{id} &#E8EEF0{appellant} &8· &#8AA6B0{text}"
+
+# ==========================================================================
+# ОБМЕЖЕННЯ ТА ЕФЕКТИ ГРАВЦІВ
+# ==========================================================================
+
+mechanism:
+  warn: "&#8AFFEB&l[Модерація] &r&#E8EEF0{reason}"
+  kick: "&#FF7A7A{reason}"
+
+access:
+  banned:
+    - "&#FF7A7A&lВИ ПІД САНКЦІЄЮ"
+    - ""
+    - "&#E8EEF0{reason}"
+    - ""
+    - "&#7C93A0Міра &8· &#8AFFEB{measure}"
+
+behaviour:
+  muted: "{prefix}&#FF7A7AВи в муті й не можете писати в чат."
+  quarantine:
+    applied: "{prefix}&#FFC061Ви поміщені в карантин."
+    boundary: "{prefix}&#7C93A0Ви не можете покинути зону карантину."
+  lifted: "{prefix}&#79FFB0Санкцію проти вас знято."
+
+# ==========================================================================
+# СПОВІЩЕННЯ ТА ТРАНСЛЯЦІЯ
+# ==========================================================================
+
+broadcast:
+  sanction: "{prefix}&#E8EEF0{target} &#7C93A0отримав санкцію від {rank} &#E8EEF0{staff} &8· &#8AFFEB{measure} &#FFD479{duration} &8· {reason}"
+
+notify:
+  lift: "{prefix}&#8AFFEB[Сповіщення] {rank} &#E8EEF0{staff} &#7C93A0зняв &#E8EEF0#{id} &8({kind}) &#7C93A0з &#E8EEF0{target} &8· &#8AFFEB{measure}"
+  summary: "{prefix}&#8AFFEB[Сповіщення] {rank} &#E8EEF0{staff} &#8AFFEB{measure} &#7C93A0на &#E8EEF0{target} &8({rule}) &#FFD479{duration} &8· {reason}"
+  appeal: "{prefix}&#8AFFEB[Апеляція] &#E8EEF0{player} &#7C93A0оскаржив санкцію &#E8EEF0#{id} &8(апеляція #{appeal}) &8· &#8AA6B0{text}"
+  appeal-decision: "{prefix}&#8AFFEB[Апеляція] &#7C93A0Апеляцію &#E8EEF0#{appeal} &8(санкція #{id}) &#7C93A0{verdict} &8· &#E8EEF0{reviewer}"
+  review: "{prefix}&#8AFFEB[Перегляд] &#7C93A0Санкція &#E8EEF0#{id} &8({measure}, модер. {staff}) &#7C93A0очікує на перегляд"
+  unlift: "{prefix}&#8AFFEB[Сповіщення] &#E8EEF0{staff} &#7C93A0відновив &#E8EEF0#{id} &#7C93A0на &#E8EEF0{target}"
+  bulk-lift: "{prefix}&#8AFFEB[Сповіщення] &#E8EEF0{staff} &#7C93A0масово анулював санкцій: &#E8EEF0{count}&#7C93A0 за '&#E8EEF0{value}&#7C93A0'"
+  dispatch: "{prefix}&#8AFFEB[Автомат] &#8AFFEB{automaton}&8.&#E8EEF0{rule} &#7C93A0спрацював на &#B8C6CE{event} &8· &#E8EEF0{subject}"
+
+# ==========================================================================
+# ПОМИЛКИ ТА ВАЛИДАЦІЯ
+# ==========================================================================
+
+error:
+  parse: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DB{error}"
+  resolve: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB{error}"
+  enforce-failed: "{prefix}&#FF7A7AНе вдалося застосувати &8· &#C9D6DB{error}"
+  command: "{prefix}&#FF7A7AПомилка команди &8· &#C9D6DB{error}"
+  weave-parent-not-found: "{prefix}&#FF7A7AНе вдалося застосувати &8· &#C9D6DBбатьківську справу #{id} не знайдено"
+
+parse:
+  unterminated-quote: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBНезакриті лапки"
+  unbalanced-close: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBЗайва ')' на позиції {offset}"
+  unclosed-open: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBНе закрито '(': {count}"
+  multiple-layouts: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBДозволено лише один селектор ::шаблон"
+  empty-layout: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBПорожній селектор шаблону '::'"
+  malformed-annotation: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBНекоректна анотація {token} &8({error})"
+  empty-override-key: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBПараметр із порожнім ключем: {token}"
+  duplicate-override: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBПовторення параметра '{key}'"
+  unexpected-token: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBЗайвий токен '{token}': ціль уже задана як '{target}' &8(параметри пишуться як ключ=\"значення\", напр. reason=\"...\")"
+  no-target: "{prefix}&#FF7A7AПомилка розбору &8· &#C9D6DBНе вказано гравця-ціль"
+
+resolve:
+  directive-negated: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBДирективу @{name} не можна заперечувати"
+  duplicate-directive: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBПовторення @{name}"
+  count-unknown-rule: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@count посилається на невідоме правило {rule}"
+  waive-unknown: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@waive вказує на невідому анотацію @{name}"
+  unhandled-directive: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНеоброблена директива @{name}"
+  amend-conflict: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@amend несумісний із {with}"
+  tariff-temporal: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@tariff застосовний тільки до тимчасових заходів, а не до {measure}"
+  unknown-layout: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНевідомий шаблон ::{key}"
+  unknown-annotation: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНевідома анотація @{name}"
+  no-permission: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНедостатньо прав для @{name}"
+  remand-standalone: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@remand — самостійний запобіжний захід і не поєднується з іншою мірою"
+  measure-commute-exclusive: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@measure та @commute взаємовиключні"
+  nothing-to-commute: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНічого пом'якшувати: у шаблоні немає міри"
+  layout-has-measure: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBШаблон задає міру; використовуйте @commute для заміни"
+  no-measure: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBМіру не задано: ручна санкція вимагає @measure(...) або @remand"
+  commute-mitigate: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНедостатньо прав для пом'якшення з {from} до {to}"
+  commute-aggravate: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНедостатньо прав для посилення з {from} до {to}"
+  conflict: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBКонфлікт анотацій @{left} та @{right}"
+  requires: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@{requirer} вимагає @{required} &8(можна зняти через @waive)"
+  unknown-override: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНевідомий параметр {key} &8(допустимо: {allowed})"
+  instant-no-duration: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBМіра {measure} миттєва й не приймає термін"
+  invalid-duration: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBНеправильний термін: {error}"
+  measure-needs-duration: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBМіра {measure} вимагає термін"
+  weave-format: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@weave очікує ID санкції (наприклад, #42)"
+  weave-positive: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DBID у @weave має бути додатним"
+  suspend-stay: "{prefix}&#FF7A7AПОМИЛКА &8· &#C9D6DB@suspended та @stay взаємовиключні"
+
+# ==========================================================================
+# АВТОМАТИЗАЦІЯ ТА БЕЗПЕКА
+# ==========================================================================
+
+fingerprint:
+  alert: "{prefix}&#FF7A7A[Відбиток] &#FFC061{name} &#7C93A0можливо обходить бан &8(оцінка {score} · збігається з {banned})"
+  header: "{prefix}&#8AFFEB&lВідбиток &8· &#E8EEF0{name}"
+  no-session: "&#7C93A0  Сесію не записано"
+  line: "&#7C93A0  {label}  &#E8EEF0{value}"
+  no-match: "&#79FFB0  Збігів немає"
+  match: "&#FFC061  Збіг &8· бан={banned} оцінка={score} сигналів={signals}"
+  not-online: "{prefix}&#FF7A7AГравець не в мережі &8· &#E8EEF0{name}"
+
+alam:
+  list:
+    header: "{prefix}&#8AFFEB&lАвтомати &8· &#E8EEF0{count} правил(о)"
+    entry: "&8  &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· на &#B8C6CE{event} &8· {stages} стадій"
+  sim:
+    header: "{prefix}&#FFD479&lСимуляція &8· &#B8C6CE{kind} &8· &#E8EEF0{subject}"
+    fire: "&#79FFB0  ✔ спрацювало б &8· &#8AFFEB{automaton}&8.&#E8EEF0{rule}"
+    skip: "&#7C93A0  ✘ &#8AFFEB{automaton}&8.&#E8EEF0{rule} &8· {decision}"
+    empty: "&#7C93A0  жодне правило не спрацює"
+    unknown-kind: "{prefix}&#FF7A7AНевідомий тип події &8· &#E8EEF0{kind}"
+
+# ==========================================================================
+# ДІАГНОСТИКА
+# ==========================================================================
+
+diag:
+  ping:
+    probing: "{prefix}&#7C93A0Перевірка сховища…"
+    ok: "{prefix}&#79FFB0Сховище ОК &8· &#7C93A0затримка &#E8EEF0{latency}мс &8· схема &#E8EEF0v{schema}"
+    unavailable: "{prefix}&#FF7A7AСховище НЕДОСТУПНЕ"
+  rules:
+    count: "{prefix}&#8AFFEBПравил завантажено &8· &#E8EEF0{count}"
+    entry: "{prefix}&#B8C6CE{id} &8· &#E8EEF0{description}"
+    undefined: "{prefix}&#FF7A7AПравило не знайдено &8· &#E8EEF0{id}"
+  layouts:
+    list: "{prefix}&#8AFFEBШаблони &8({count}) &8· &#E8EEF0{keys}"
+    unknown: "{prefix}&#FF7A7AШаблон не знайдено &8· &#E8EEF0{key}"
+  layout:
+    header: "{prefix}&#8AFFEB&lШаблон &8· &#E8EEF0::{key}"
+    measure: "&#7C93A0  Міра      &#8AFFEB{measure}"
+    rule: "&#7C93A0  Правило   &#B8C6CE{rule} &8({description})"
+    reason: "&#7C93A0  Причина   &#E8EEF0{reason}"
+    duration: "&#7C93A0  Термін    &#FFD479{duration}"
+    escalation: "&#7C93A0  Ескал.    &#FFD479{ladder}"
+    flags: "&#7C93A0  Прапорці  &#8AA6B0{flags}"
+    reason-inherited: "<опис правила>"
+  annotations:
+    list: "{prefix}&#8AFFEBАннотації &8({count}) &8· &#E8EEF0{names}"
+  annotation:
+    unknown: "{prefix}&#FF7A7AАннотацію не знайдено &8· &#E8EEF0@{name}"
+    header: "{prefix}&#8AFFEB&l@{name}"
+    scope: "&#7C93A0  Область     &#E8EEF0{scope}"
+    permission: "&#7C93A0  Право       &#8AA6B0{permission}"
+    implies: "&#7C93A0  Тягне       &#E8EEF0{names}"
+    requires: "&#7C93A0  Вимагає     &#E8EEF0{names}"
+    conflicts: "&#7C93A0  Конфлікт    &#E8EEF0{names}"

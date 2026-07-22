@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/index">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALAM language reference - Minutiae Enforcement</title>
+    <meta name="description" content="Complete index of ALAM keywords, types, constructors, records, events, functions, and compiler diagnostics.">
+    <link rel="stylesheet" href="../../../assets/site.css">
+    <script src="../../../assets/nav.js" defer></script>
+    <script src="../../../assets/alam-lang.js" defer></script>
+    <script src="../../../assets/alam-links.js" defer></script>
+    <script src="../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <article class="article-body">
+            <h1>ALAM language reference</h1>
+            <p class="lede">ALAM is the load-time compiled definition language of the moderation automaton subsystem. A source either produces a complete verified plan or no plan. Runtime dispatch performs no parsing, name resolution, type checking, or structural validation.</p>
+
+            <h2 id="model">Language model</h2>
+            <p>Every expression denotes a typed value. Declarations are processed in source order under declaration-before-use. The type system performs no implicit conversion. Effects form the two-point order <code>pure &lt; query</code>: guards may read the enforcement environment, while verdicts and compile-time declarations remain pure.</p>
+            <p>The compiler runs lexing, parsing, elaboration, compile-time evaluation, verification, and lowering. Accepted plans contain primitive trigger data plus closed guard and verdict values. Platform events are adapted to ordinary record values before interpretation.</p>
+
+            <div class="callout note">
+                <span class="label">Reference structure</span>
+                <p>Each entity has one page. Grammar on an entity page covers that entity only. Runtime mechanics are documented on the trigger or function that exposes them. Narrative guides describe the model and pipeline without duplicating entity facts.</p>
+            </div>
+
+            <h2 id="guides">Guides</h2>
+            <table class="items">
+                <tr>
+                    <td><a href="guide/lexical.html">Lexical structure</a></td>
+                    <td>Tokens, maximal munch, duration and rule-identifier refinements, comments, and recovery.</td>
+                </tr>
+                <tr>
+                    <td><a href="guide/pipeline.html">Compilation pipeline</a></td>
+                    <td>Phase order, whole-unit rejection, publication, and Java-side data flow.</td>
+                </tr>
+                <tr>
+                    <td><a href="guide/effects.html">Effects</a></td>
+                    <td>The <code>pure &lt; query</code> lattice and the allowances of each expression position.</td>
+                </tr>
+                <tr>
+                    <td><a href="guide/runtime.html">Runtime model</a></td>
+                    <td>Event adaptation, guard evaluation, windows, sequences, throttling, materialization, and firing.</td>
+                </tr>
+            </table>
+
+            <div class="alam-index">
+                <section id="keywords">
+                    <h2>Keywords</h2>
+                    <ul>
+                        <li><code>rule</code></li>
+                        <li><code>template</code></li>
+                        <li><code>automaton</code></li>
+                        <li><code>const</code></li>
+                        <li><code>schema</code></li>
+                        <li><code>matrix</code></li>
+                        <li><code>transform</code></li>
+                        <li><code>expand</code></li>
+                        <li><code>match</code></li>
+                        <li><code>with</code></li>
+                        <li><code>use</code></li>
+                        <li><code>override</code></li>
+                    </ul>
+                </section>
+
+                <section id="types">
+                    <h2>Types</h2>
+                    <ul>
+                        <li><code>Bool</code></li>
+                        <li><code>Int</code></li>
+                        <li><code>Real</code></li>
+                        <li><code>Text</code></li>
+                        <li><code>Duration</code></li>
+                        <li><code>Rule</code></li>
+                        <li><code>Account</code></li>
+                        <li><code>Step</code></li>
+                        <li><code>Event</code></li>
+                        <li><code>list</code></li>
+                        <li><code>function</code></li>
+                    </ul>
+                </section>
+
+                <section id="sums">
+                    <h2>Sum types</h2>
+                    <ul>
+                        <li><code>Measure</code></li>
+                        <li><code>Trigger</code></li>
+                        <li><code>Escalation</code></li>
+                        <li><code>Annotation</code></li>
+                        <li><code>Attribution</code></li>
+                        <li><code>DryRun</code></li>
+                        <li><code>GroupBy</code></li>
+                        <li><code>Duration term</code></li>
+                    </ul>
+                </section>
+
+                <section id="records">
+                    <h2>Records</h2>
+                    <ul>
+                        <li><code>Sanction</code></li>
+                        <li><code>Layout</code></li>
+                    </ul>
+                </section>
+
+                <section id="events">
+                    <h2>Events</h2>
+                    <ul>
+                        <li><code>Event</code></li>
+                        <li><code>Chat</code></li>
+                        <li><code>Break</code></li>
+                        <li><code>Login</code></li>
+                        <li><code>Evasion</code></li>
+                    </ul>
+                </section>
+
+                <section id="functions">
+                    <h2>Functions</h2>
+                    <ul>
+                        <li><code>precedent</code></li>
+                        <li><code>fingerprint_score</code></li>
+                        <li><code>is_online</code></li>
+                        <li><code>now</code></li>
+                        <li><code>Guard::Always</code></li>
+                    </ul>
+                </section>
+
+                <section id="constructors" class="wide">
+                    <h2>Constructors</h2>
+                    <ul>
+                        <li><code>Trigger::Atomic</code></li>
+                        <li><code>Trigger::Repeated</code></li>
+                        <li><code>Trigger::Sequence</code></li>
+                        <li><code>Escalation::Steps</code></li>
+                        <li><code>GroupBy::Field</code></li>
+                        <li><code>Duration::Fixed</code></li>
+                        <li><code>Annotation::Notify</code></li>
+                        <li><code>Annotation::WarnFirst</code></li>
+                        <li><code>Annotation::Decay</code></li>
+                        <li><code>Annotation::Stay</code></li>
+                        <li><code>Annotation::Tariff</code></li>
+                        <li><code>Annotation::Probation</code></li>
+                        <li><code>Annotation::Reason</code></li>
+                        <li><code>Annotation::Link</code></li>
+                        <li><code>Attribution::Staff</code></li>
+                    </ul>
+                    <p>Nullary constructors are documented as anchored sections on their sum-type page. <code>Trigger::Atomic</code> is the exception because it has independent runtime gating semantics and participates as a trigger form alongside the stateful constructors.</p>
+                </section>
+
+                <section id="diagnostics" class="wide">
+                    <h2>Diagnostics</h2>
+                    <ul>
+                        <li><a href="diag/L001.html"><code>L001</code></a></li>
+                        <li><a href="diag/L002.html"><code>L002</code></a></li>
+                        <li><a href="diag/L003.html"><code>L003</code></a></li>
+                        <li><a href="diag/L004.html"><code>L004</code></a></li>
+                        <li><a href="diag/L005.html"><code>L005</code></a></li>
+                        <li><a href="diag/L006.html"><code>L006</code></a></li>
+                        <li><a href="diag/L007.html"><code>L007</code></a></li>
+                        <li><a href="diag/L008.html"><code>L008</code></a></li>
+
+                        <li><a href="diag/P001.html"><code>P001</code></a></li>
+                        <li><a href="diag/P002.html"><code>P002</code></a></li>
+                        <li><a href="diag/P003.html"><code>P003</code></a></li>
+                        <li><a href="diag/P004.html"><code>P004</code></a></li>
+                        <li><a href="diag/P005.html"><code>P005</code></a></li>
+                        <li><a href="diag/P006.html"><code>P006</code></a></li>
+                        <li><a href="diag/P007.html"><code>P007</code></a></li>
+                        <li><a href="diag/P008.html"><code>P008</code></a></li>
+                        <li><a href="diag/P009.html"><code>P009</code></a></li>
+                        <li><a href="diag/P010.html"><code>P010</code></a></li>
+                        <li><a href="diag/P011.html"><code>P011</code></a></li>
+                        <li><a href="diag/P013.html"><code>P013</code></a></li>
+
+                        <li><a href="diag/E001.html"><code>E001-E037</code></a></li>
+                        <li><a href="diag/V001.html"><code>V001-V017</code></a></li>
+                        <li><a href="diag/R001.html"><code>R001-R005</code></a></li>
+                        <li><a href="diag/W001.html"><code>W001</code></a></li>
+                        <li><a href="diag/W003.html"><code>W003</code></a></li>
+                    </ul>
+                    <p>Every code in the public ranges has a stable page. A code not emitted by the current compiler is marked reserved on that page.</p>
+                </section>
+            </div>
+
+            <h2 id="source-files">Source files and publication</h2>
+            <p>The plugin scans <code>&lt;data&gt;/alam/*.alam</code> in file-name order. Each file is planned independently. A failed file arms no rule and stamps no layout, while accepted siblings remain available. Layout-key collisions across accepted files are deterministic: the first producer in file-name order wins.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

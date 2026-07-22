@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/const">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>const - ALAM reference</title>
+    <meta name="description" content="Detailed reference for immutable ALAM compile-time constants, type availability, evaluation, closure capture, and failure behavior.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Bool', href: '../type/Bool.html', group: 'Common types' },
+            { label: 'Int', href: '../type/Int.html' },
+            { label: 'Real', href: '../type/Real.html' },
+            { label: 'Text', href: '../type/Text.html' },
+            { label: 'Duration', href: '../type/Duration.html' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'schema', href: 'schema.html', group: 'Aggregate types' },
+            { label: 'Layout', href: '../rec/Layout.html' },
+            { label: 'Sanction', href: '../rec/Sanction.html' },
+            { label: 'template', href: 'template.html', group: 'Consumers' },
+            { label: 'transform', href: 'transform.html' },
+            { label: 'E007', href: '../diag/E007.html', group: 'Diagnostics' },
+            { label: 'V006', href: '../diag/V006.html' },
+            { label: 'V012', href: '../diag/V012.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>const</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Declares one immutable named value whose initializer is evaluated once while the source unit is compiled.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Top-level value declaration</td></tr>
+                <tr><th>Introduces</th><td>One global value name</td></tr>
+                <tr><th>Initializer effect</th><td><span class="eff pure">pure</span></td></tr>
+                <tr><th>Evaluation time</th><td>Compile time</td></tr>
+                <tr><th>Re-evaluation on access</th><td>None</td></tr>
+                <tr><th>Mutability</th><td>Immutable</td></tr>
+                <tr><th>Java representation</th><td>One <code>Value</code> bound in the root <code>Env</code></td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>const type name = initializer;</code></pre>
+
+            <pre class="gram"><code>const-declaration =
+    "const" type identifier
+    "=" expression ";" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Part</th><th>Form</th><th>Description</th></tr>
+                <tr><td><code>type</code></td><td>Resolvable source type</td><td>Exact expected type of the initializer.</td></tr>
+                <tr><td><code>name</code></td><td>Identifier</td><td>Global value name visible to later declarations.</td></tr>
+                <tr><td><code>initializer</code></td><td>Pure expression of the declared type</td><td>Expression evaluated exactly once during compilation.</td></tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The declared type is unknown at the declaration point.</li>
+                    <li>The name duplicates any earlier top-level declaration.</li>
+                    <li>The initializer is not assignable to the declared type.</li>
+                    <li>The initializer calls a query-capable function.</li>
+                    <li>The initializer references an unknown or later value.</li>
+                    <li>Initializer evaluation fails.</li>
+                </ol>
+            </div>
+
+            <h3 id="type-availability">Type availability</h3>
+            <p>The declaration uses the ordinary source type grammar. Common admissible forms include primitive types, <code>Measure</code>, <code>Sanction</code>, <code>Layout</code>, earlier schemas, list types, and structural <code>Rule&lt;Events...&gt;</code> types.</p>
+            <p>Several built-in constructor roots are not registered as general source type names. For example, a value such as <code>Escalation::None</code> exists, but the current type namespace does not accept <code>Escalation</code> in a <code>const</code> header.</p>
+
+            <div class="callout note">
+                <span class="label">Function constants</span>
+                <p>The Java type model and composition logic can represent a constant whose type is <code>Type.Func</code>. The current source type grammar has no general function-type spelling, so a source-level <code>const</code> cannot directly declare an arbitrary function type.</p>
+            </div>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The initializer is evaluated against the root compile-time environment. Its resulting value is stored under the constant name and returned directly on every later reference.</p>
+
+            <pre class="synopsis"><code>const Int limit = 2 * 5;
+
+limit
+limit
+limit
+
+// The multiplication ran once, not once per reference.</code></pre>
+
+            <h3 id="declaration-before-use">Declaration before use</h3>
+            <p>A constant may reference earlier constants, matrices, transforms, built-in constructors, and pure functions. It cannot reference a later declaration.</p>
+            <p>The elaborator enters the constant symbol after resolving its header and before checking the initializer. This limits cascading diagnostics, but a self-reference does not become a valid recursive value. The complete unit is rejected when the initializer is invalid.</p>
+
+            <h3 id="aggregate-values">Aggregate values</h3>
+            <p>A constant may store an immutable list, record, sum variant, layout, sanction descriptor, or structural rule value when the declared source type can express that value.</p>
+            <p>Referencing an aggregate constant returns the same immutable value object. ALAM provides no mutation operation that can alter the shared value.</p>
+
+            <h3 id="captured-values">Closure capture</h3>
+            <p>A later transform, template body, guard, or verdict may capture a constant through its lexical environment. The constant value is already evaluated before the closure is created.</p>
+            <p>A runtime guard therefore does not re-run the constant initializer and cannot observe changed external state through it.</p>
+
+            <h3 id="failure">Evaluation failure</h3>
+            <p>Checked arithmetic, division by zero, invalid duration arithmetic, invalid text patterns, template constraint failure, and depth exhaustion may fail the initializer.</p>
+            <p>The evaluator reports the diagnostic and skips binding the failed value. Because the planner publishes no unit after any evaluation error, later temporary evaluator state cannot become live.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff pure">pure</span> The initializer cannot read precedent, fingerprint score, online state, or wall-clock time.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>Elaboration resolves and registers the header before checking the initializer:</p>
+                <pre><code class="language-java">final Type type =
+    resolveType(constant.type());
+
+define(
+    constant.name(),
+    new Symbol.ConstSym(
+        constant.name(),
+        type,
+        constant.init(),
+        constant.pos()
+    ),
+    constant.pos()
+);
+
+check(
+    constant.init(),
+    type,
+    new Scope(null),
+    Effect.PURE
+);</code></pre>
+
+                <p>Evaluation computes and stores one value:</p>
+                <pre><code class="language-java">case Decl.Const constant -&gt; {
+    final Value value =
+        eval(constant.init(), global);
+
+    constants.put(
+        constant.name(),
+        value
+    );
+
+    global.bind(
+        constant.name(),
+        value
+    );
+}</code></pre>
+
+                <p>Name evaluation returns the existing binding:</p>
+                <pre><code class="language-java">case Symbol.Local local -&gt;
+    env.lookup(local.name());
+
+case null, default -&gt;
+    global.lookup(name.name());</code></pre>
+
+                <ul>
+                    <li>The evaluator's constant collection is a declaration-order <code>LinkedHashMap</code>.</li>
+                    <li>The public evaluator output wraps it with <code>Map.copyOf</code>; callers should not rely on iteration order of that copied map.</li>
+                    <li>The root environment uses a mutable <code>HashMap</code> that grows during evaluation.</li>
+                    <li>Values themselves are immutable by language convention.</li>
+                    <li>A failed unit is never partially published by <code>Planner</code>.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Declaration lookup</dt><dd>Expected O(1).</dd>
+                    <dt>Initialization</dt><dd>O(I), where I is initializer evaluation cost.</dd>
+                    <dt>Later access</dt><dd>Expected O(1).</dd>
+                    <dt>Storage</dt><dd>O(V), where V is retained value size.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Int flood_count = 5;
+const Duration flood_window = 30s;
+const Text staff_channel = "staff";
+
+const Layout chat_layout = Layout {
+    .key = "chat-flood",
+    .rule = P.2.1,
+    .reason = "Repeated message flooding",
+    .measure = Measure::MUTE,
+    .duration = Duration::Fixed(3h),
+    .escalation = Escalation::None,
+    .annotations = {
+        Annotation::Notify(staff_channel),
+    },
+};</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>The type, name, assignment, initializer, or semicolon is missing.</td></tr>
+                <tr><td><code>E001</code></td><td>Elaboration</td><td>The initializer references an unknown or later value.</td></tr>
+                <tr><td><code>E002</code></td><td>Elaboration</td><td>The declared type is unknown or malformed.</td></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The initializer has an incompatible type.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>The initializer calls a query-capable function.</td></tr>
+                <tr><td><code>E014</code></td><td>Elaboration</td><td>The constant name duplicates an earlier declaration.</td></tr>
+                <tr><td><code>V003</code></td><td>Evaluation</td><td>A nested template constraint evaluates false.</td></tr>
+                <tr><td><code>V005</code></td><td>Evaluation</td><td>Integer division by zero.</td></tr>
+                <tr><td><code>V006</code></td><td>Evaluation</td><td>Checked arithmetic overflow.</td></tr>
+                <tr><td><code>V008</code></td><td>Evaluation</td><td>Invalid negative duration result or factor.</td></tr>
+                <tr><td><code>V012</code></td><td>Evaluation</td><td>Application exceeds the compile-time depth limit.</td></tr>
+                <tr><td><code>V015</code></td><td>Evaluation</td><td>An invalid Java regular expression is evaluated.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>schema</code></td><td>Introduces nominal aggregate types usable by later constants.</td></tr>
+                <tr><td><code>matrix</code></td><td>Declares an ordered list value evaluated at compile time.</td></tr>
+                <tr><td><code>transform</code></td><td>May capture and consume earlier constants.</td></tr>
+                <tr><td><code>template</code></td><td>May capture constants in generated guard and verdict closures.</td></tr>
+            </table>
+
+            <footer class="site-footer"><span>Minutiae Enforcement</span><a href="../">ALAM reference</a></footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

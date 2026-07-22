@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/type/Step">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Step - ALAM reference</title>
+    <meta name="description" content="Reference for event-parameterized ALAM sequence-step values and their query-capable guards.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Event', href: 'Event.html', group: 'Parameter' },
+            { label: 'function', href: 'function.html' },
+            { label: 'Trigger::Sequence', href: '../ctor/Trigger.Sequence.html', group: 'Used by' },
+            { label: 'Guard::Always', href: '../fn/Guard.Always.html' },
+            { label: 'guard', href: '../keyword/rule.html#guard' },
+            { label: 'Runtime model', href: '../guide/runtime.html', group: 'Runtime' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Step</h1>
+                <span class="entity-badge type">type</span>
+            </div>
+            <p class="entity-def">An event-parameterized sequence element that pairs one event type with a query-capable admission guard.</p>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="gram"><code>step-construction =
+    "Step" "&lt;" event-type "&gt;" "{"
+        ".guard" "=" guard-expression
+    "}" ;</code></pre>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr>
+                    <td>Event parameter</td>
+                    <td>Concrete event type</td>
+                    <td>Event kind that may satisfy this sequence position.</td>
+                </tr>
+                <tr>
+                    <td><code>guard</code></td>
+                    <td><code>(EventType) -&gt; Bool</code></td>
+                    <td>Query-capable function deciding whether an incoming event is admitted at this step.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The event parameter must name a known event type.</li>
+                <li>Exactly one field, <code>guard</code>, is required.</li>
+                <li>The guard must accept one event of the selected type and return <code>Bool</code>.</li>
+                <li>The guard function may have effect <code>pure</code> or <code>query</code>.</li>
+                <li>When used in <code>Trigger::Sequence</code>, the step event must equal the corresponding event declared by the containing rule.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>A step is a value, not a declaration. It is normally stored in the ordered <code>steps</code> list of <code>Trigger::Sequence</code>.</p>
+            <p>When an event arrives for a sequence rule, the runtime compares its event kind with the next expected step. If the kinds agree, the step guard is evaluated against that event record. A true result advances the partial match and captures the facts.</p>
+            <p>A false result does not advance the step. If the same event satisfies the first step while a later step is expected, the sequence may re-anchor to a new partial match beginning at that event.</p>
+            <p>A step guard failure is treated as a non-match. It does not produce a runtime diagnostic visible to the language source and does not escape into the event handler.</p>
+
+            <h3 id="java-implementation">Under the Java implementation</h3>
+            <p>The static type is <code>Type.Step(Type.Event)</code>. The evaluated value is <code>Value.StepV</code>, which stores the event type and guard value.</p>
+            <p>Lowering converts each value to <code>TriggerPlan.Sequence.Step(EventKind, Value)</code>. <code>DispatchEngine.stepGuard</code> adapts the incoming facts to the corresponding event record and invokes the guard through the plan's shared <code>Interp</code>.</p>
+            <p>The base internal step type over <code>Event</code> accepts concrete event steps by the language's deliberate event and step assignability axes.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff query">query</span> The step guard may read the enforcement environment. Constructing the step value remains pure.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">trigger = Trigger::Sequence {
+    .within = 10m,
+    .group_by = GroupBy::Subject,
+    .steps = {
+        Step&lt;Login&gt; {
+            .guard = Guard::Always,
+        },
+        Step&lt;Chat&gt; {
+            .guard = (event) -&gt;
+                event.message ~ "appeal";
+        },
+    },
+};</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="items diag-list">
+                <tr><td><code>E003</code></td><td>The guard has an incompatible function type.</td></tr>
+                <tr><td><code>E004</code></td><td>The construction supplies an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>The mandatory <code>guard</code> field is absent.</td></tr>
+                <tr><td><code>E008</code></td><td>The guard lambda has a parameter count other than one.</td></tr>
+                <tr><td><code>E025</code></td><td>The event parameter is unknown.</td></tr>
+                <tr><td><code>V002</code></td><td>The sequence step event does not correspond to the containing rule event list.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Trigger::Sequence</code></td><td>Consumes an ordered list of step values.</td></tr>
+                <tr><td><code>Event</code></td><td>Base event shape and event assignability axis.</td></tr>
+                <tr><td><code>Guard::Always</code></td><td>Admission guard that accepts every event of the step kind.</td></tr>
+                <tr><td>Runtime model</td><td>Partial matches, re-anchoring, and captured facts.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru" data-slug="docs/layouts">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Шаблоны и эскалация - Minutiae Enforcement</title>
+    <meta name="description" content="Переиспользуемые шаблоны санкций: наследование, лестницы эскалации, прецедент, затухание и объединённые дела.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Документация"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Шаблоны и эскалация</h1>
+            <p class="lede">Шаблон записывает вашу политику наказаний один раз:
+                модератор набирает <code>::griefing</code>, а правило, мера,
+                срок, лестница и аннотации по умолчанию приходят из
+                конфигурации, а не из памяти.</p>
+
+            <h2 id="anatomy">Устройство шаблона</h2>
+            <pre><code>layouts:
+  griefing:
+    rule: "P.3.2"
+    measure: SUSPENSION
+    reason: "Гриферство построек игроков"
+    duration: 7d
+    escalation: [ "7d", "30d", "permanent" ]
+    annotations:
+      - "@evidence(required)"
+      - "@escalate"
+      - "@notify(staff)"</code></pre>
+            <table class="items">
+                <tr><td>rule</td>
+                    <td>Идентификатор цитируемого правила. Обязателен для
+                        любого вызываемого шаблона; шаблон с правилом,
+                        отсутствующим в <code>rules.yml</code>, отключается
+                        при загрузке с ошибкой в логе — никогда молча.</td></tr>
+                <tr><td>measure</td>
+                    <td>Механизм принуждения. Обязателен; временные правила
+                        каждой меры — на странице
+                        <a href="measures.html">Меры</a>.</td></tr>
+                <tr><td>reason</td>
+                    <td>Отображаемая причина. При отсутствии берётся описание
+                        правила из <code>rules.yml</code>.</td></tr>
+                <tr><td>duration</td>
+                    <td>Базовый срок. Обязателен для временных мер (MUTE,
+                        QUARANTINE, SUSPENSION); запрещён для мгновенных
+                        (WARN, CENSURE, KICK); игнорируется CUSTODY, которая
+                        перманентна по определению.</td></tr>
+                <tr><td>escalation</td>
+                    <td>Лестница, к которой обращается
+                        <code>@escalate</code>. Разобрана ниже.</td></tr>
+                <tr><td>annotations</td>
+                    <td>Аннотации по умолчанию, в той же грамматике, что и
+                        команды. Здесь допустимы только config-scoped
+                        аннотации; директивы только-для-команды отклоняются при
+                        загрузке.</td></tr>
+            </table>
+
+            <div class="callout note"><span class="label">Примечание</span>
+                <p>Аннотации шаблона проверяются по правам
+                    <em>выдающего</em> модератора, а не конфигурации. Шаблон с
+                    <code>@shadow</code> непригоден для персонала, чья группа
+                    лишена <code>minutiae.annotation.shadow</code>, — команда
+                    отклоняется, а не молча урезается.</p>
+            </div>
+
+            <h2 id="inheritance">Наследование</h2>
+            <p>Ключ, начинающийся с подчёркивания, — приватный: он никогда не
+                появляется в командах и автодополнении и существует только как
+                база. Шаблон называет родителя через <code>extends</code>:</p>
+            <pre><code>layouts:
+  _base_cheat:
+    rule: "P.5.1"
+    annotations:
+      - "@evidence(required)"
+      - "@ip-lock"
+
+  cheating:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "Использование неразрешённых модификаций клиента"
+
+  killaura:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "KillAura"
+    annotations:
+      - "@shadow"</code></pre>
+            <p>Правила слияния просты, и их стоит знать точно:</p>
+            <table class="items">
+                <tr><td>скаляры</td>
+                    <td>rule, reason, measure, duration: значение потомка
+                        побеждает, когда присутствует, иначе наследуется
+                        родительское.</td></tr>
+                <tr><td>escalation</td>
+                    <td>Заменяется потомком целиком, когда объявлена; лестницы
+                        не сливаются поступенчато.</td></tr>
+                <tr><td>annotations</td>
+                    <td>Конкатенируются: сначала родительские, затем потомка.
+                        Накапливаются вниз по цепочке.</td></tr>
+            </table>
+            <p>Циклы наследования, отсутствующие родители и потомки павших
+                родителей обнаруживаются при загрузке; провинившийся шаблон
+                отключается, остальной реестр загружается нормально.
+                <code>/me-ban layouts</code> показывает, что фактически
+                попало внутрь.</p>
+
+            <h2 id="escalation">Лестницы эскалации</h2>
+            <p>С <code>@escalate</code> срок берётся не из
+                <code>duration</code>, а из лестницы, индексируемой прецедентом
+                игрока — счётом его прежних непредупредительных санкций по тому
+                же правилу:</p>
+            <pre><code>escalation: [ "7d", "30d", "permanent" ]
+
+первое нарушение  -> 7d
+второе нарушение  -> 30d
+третье и далее    -> permanent   (последняя ступень повторяется)</code></pre>
+            <ul>
+                <li>Только последняя ступень может быть
+                    <code>permanent</code>.</li>
+                <li>Явное переопределение <code>duration=...</code> на команде
+                    полностью обходит лестницу для этой санкции.</li>
+                <li><code>@tariff(1d)</code> применяет нижний порог после
+                    выбора ступени лестницей.</li>
+            </ul>
+
+            <h3 id="precedent">Что считается прецедентом</h3>
+            <p>Прецедент ведётся по правилу, и три механизма его меняют:</p>
+            <table class="items">
+                <tr><td>Предупреждения</td>
+                    <td>Считаются отдельно: они питают ворота
+                        <code>@warn-first</code>, а не лестницу.</td></tr>
+                <tr><td>Вид снятия</td>
+                    <td><strong>Аннулированная</strong> санкция выходит из
+                        прецедента; <strong>помилованная</strong> или
+                        <strong>отбытая</strong> остаётся. См.
+                        <a href="lift.html#kinds">Снятие санкций</a>.</td></tr>
+                <tr><td>Затухание</td>
+                    <td><code>@decay(30d)</code> выводит санкцию из прецедента
+                        по истечении окна, не снимая её.</td></tr>
+            </table>
+
+            <h3 id="probation">Пробация</h3>
+            <p><code>@probation(2w)</code> — при выдаче или при снятии
+                pardon/served — открывает окно, в течение которого рецидив по
+                правилу отягчается: одна лишняя ступень лестницы или множитель
+                срока, согласно
+                <a href="configuration.html#escalation">политике
+                    эскалации</a>.</p>
+
+            <h2 id="warn-first">Ворота warn-first</h2>
+            <pre><code>toxic:
+  rule: "P.2.4"
+  measure: MUTE
+  duration: 3h
+  annotations:
+    - "@warn-first(2)"</code></pre>
+            <p>Первые два нарушения по <code>P.2.4</code> становятся
+                формальными предупреждениями; третье применяет мут. Ворота
+                обходятся на одну команду через <code>@now</code> — для
+                случаев, не заслуживающих такой любезности.</p>
+
+            <h2 id="weave">Объединённые дела</h2>
+            <p><code>@weave(#42)</code> на команде подшивает новую санкцию под
+                существующую. Участники цепочки разделяют прецедент — лестница
+                смотрит на всю цепочку, а не только на историю по правилу, — и
+                <a href="lift.html#cascade">каскадное снятие</a> может закрыть
+                всё дело разом. Применяйте, когда один инцидент порождает
+                несколько санкций, которые должны судиться как одна линия
+                поведения.</p>
+
+            <h2 id="overriding">Переопределение шаблона на команде</h2>
+            <p>Шаблон — отправная точка, не смирительная рубашка:</p>
+            <pre><code># Сменить меру (действует направленное право):
+/enforce Steve ::cheating @commute(SUSPENSION) duration=30d
+
+# Убрать аннотацию шаблона для этой одной санкции:
+/enforce Steve ::killaura !@shadow
+
+# Переопределить срок и причину:
+/enforce Steve ::griefing duration=14d reason="Вторая база за неделю"</code></pre>
+            <p><code>@measure</code> отклоняется при наличии шаблона — смена
+                меры шаблона всегда идёт через <code>@commute</code>, так что
+                действует разделение прав на смягчение и отягчение.</p>
+
+            <h2 id="workflow">Порядок правки</h2>
+            <ol>
+                <li>Правьте <code>layouts.yml</code>.</li>
+                <li><code>/me-ban reload</code> — шаблоны перезагружаются
+                    вживую с ревалидацией по правилам и аннотациям.</li>
+                <li>Проверьте строку лога: <code>registry ready: N invocable,
+                    M private, K disabled</code>. Ненулевой
+                    <code>disabled</code> означает, что строка ошибки выше
+                    называет виновника.</li>
+                <li>Осмотрите результат: <code>/me-ban layouts
+                    &lt;key&gt;</code>.</li>
+                <li>Отрепетируйте: <code>/enforce TestAccount ::key
+                    @dry-run</code>.</li>
+            </ol>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Документация</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="На этой странице"></aside>
+</div>
+</body>
+</html>

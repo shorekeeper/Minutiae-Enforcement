@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/matrix">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>matrix - ALAM reference</title>
+    <meta name="description" content="Detailed reference for ALAM typed matrices, positional rows, schema-order compatibility, evaluation, storage, and expansion.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'row', href: '#row', group: 'Clauses' },
+            { label: 'schema', href: 'schema.html', group: 'Depends on' },
+            { label: 'list', href: '../type/list.html' },
+            { label: 'transform', href: 'transform.html', group: 'Consumed by' },
+            { label: 'expand', href: 'expand.html' },
+            { label: 'Layout', href: '../rec/Layout.html', group: 'Common pipeline output' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'E002', href: '../diag/E002.html', group: 'Diagnostics' },
+            { label: 'E003', href: '../diag/E003.html' },
+            { label: 'E007', href: '../diag/E007.html' },
+            { label: 'E008', href: '../diag/E008.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>matrix</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Declares an ordered homogeneous table whose positional rows are materialized as values of one previously declared record schema.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Top-level value declaration</td></tr>
+                <tr><th>Introduces</th><td>One global matrix value name</td></tr>
+                <tr><th>Declared row type</th><td>One earlier nominal <code>schema</code></td></tr>
+                <tr><th>Expression type</th><td><code>Schema[]</code></td></tr>
+                <tr><th>Cell effect</th><td><span class="eff pure">pure</span></td></tr>
+                <tr><th>Row addressing</th><td>Positional, by schema field order</td></tr>
+                <tr><th>Compile-time representation</th><td><code>Value.ListV</code> of <code>Value.RecordV</code></td></tr>
+                <tr><th>Runtime publication</th><td>None unless consumed by later compiled values or expansion</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>matrix&lt;schema-type&gt; name {
+    row(cell-list);
+    ...
+}</code></pre>
+
+            <pre class="gram"><code>matrix-declaration =
+    "matrix" "&lt;" schema-type "&gt;"
+    identifier "{"
+        { row-declaration }
+    "}" ;
+
+row-declaration =
+    "row" "("
+        [ expression
+          { "," expression } ]
+    ")" ";" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Part</th><th>Type or form</th><th>Description</th></tr>
+                <tr>
+                    <td><code>schema-type</code></td>
+                    <td>Earlier nominal <code>schema</code></td>
+                    <td>Defines row arity, cell types, field names, and positional order.</td>
+                </tr>
+                <tr>
+                    <td><code>name</code></td>
+                    <td>Identifier</td>
+                    <td>Introduces the complete matrix as a global homogeneous list value.</td>
+                </tr>
+                <tr>
+                    <td><code>row</code></td>
+                    <td>Ordered cell list</td>
+                    <td>Constructs one record value in schema field order.</td>
+                </tr>
+                <tr>
+                    <td>Cell expression</td>
+                    <td>Corresponding schema field type</td>
+                    <td>Pure expression evaluated while the unit is compiled.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The type argument is unknown at the declaration point.</li>
+                    <li>The type argument does not resolve to a nominal record schema.</li>
+                    <li>The matrix name duplicates any earlier top-level declaration.</li>
+                    <li>A row contains a different number of cells than the schema contains fields.</li>
+                    <li>Cell <code>i</code> is not assignable to schema field <code>i</code>.</li>
+                    <li>A cell expression calls a query-capable function.</li>
+                </ol>
+            </div>
+
+            <ul class="constraint-list">
+                <li>A matrix may contain no rows.</li>
+                <li>An empty schema may be used by a matrix, and each valid row of that matrix is written as <code>row();</code>.</li>
+                <li>Rows do not name fields and cannot reorder cells independently of the schema.</li>
+                <li>All rows have one exact nominal record type.</li>
+                <li>List element types are invariant; a matrix of one schema is not assignable to a list of another schema with identical fields.</li>
+                <li>Cells may refer only to values and functions visible at the declaration point.</li>
+            </ul>
+
+            <h3 id="row">row</h3>
+            <p>A <code>row</code> is a matrix clause, not a general expression and not a separately addressable declaration. Its cells are matched to schema fields by zero-based position.</p>
+
+            <pre class="synopsis"><code>schema Example {
+    Text key;         // field 0
+    Rule rule;        // field 1
+    Duration span;    // field 2
+}
+
+row("chat", P.2.1, 3h);
+
+field 0 &lt;- "chat"
+field 1 &lt;- P.2.1
+field 2 &lt;- 3h</code></pre>
+
+            <div class="normative">
+                <span class="normative-label">Positional ABI</span>
+                <p>The schema's field order is the matrix row ABI. Reordering schema fields changes the interpretation of every row, even when field names remain unchanged.</p>
+            </div>
+
+            <p>The matrix syntax provides no named-row alternative. When policy stability matters, treat schema field order as part of the public source contract.</p>
+
+            <h2 id="semantics">Semantics</h2>
+
+            <h3 id="declaration-order">Declaration and visibility</h3>
+            <p>The schema must already exist. The matrix symbol is entered into the global symbol table before its cells are checked, following the elaborator's general failure-isolation strategy.</p>
+            <p>A matrix becomes visible to later accepted declarations. Forward references to a later matrix are not resolved.</p>
+
+            <h3 id="type">Matrix expression type</h3>
+            <p>Referencing the matrix name produces a homogeneous list type:</p>
+            <pre class="synopsis"><code>matrix&lt;TariffRow&gt; tariffs { ... }
+
+tariffs : TariffRow[]</code></pre>
+            <p>The language does not expose a distinct first-class matrix type. Matrix syntax is a declaration convenience over an ordered list of schema records.</p>
+
+            <h3 id="evaluation-order">Evaluation order</h3>
+            <p>Rows are evaluated from top to bottom. Within each row, cells are evaluated from left to right.</p>
+            <ol>
+                <li>Create an empty outer row list.</li>
+                <li>For each row in source order, create an empty cell list.</li>
+                <li>Evaluate each cell in source order against the global environment.</li>
+                <li>Create one <code>Value.RecordV</code> using the schema and ordered cell values.</li>
+                <li>Append that record to the outer list.</li>
+                <li>After every row succeeds, bind one <code>Value.ListV</code> under the matrix name.</li>
+            </ol>
+
+            <p>Evaluation of a cell may call earlier pure transforms, instantiate templates in a compatible value context, perform checked arithmetic, construct aggregates, or evaluate <code>match</code>.</p>
+
+            <div class="normative">
+                <span class="normative-label">Whole-unit publication</span>
+                <p>If a later cell fails during evaluation, earlier rows may already exist inside the temporary evaluator state. However, the planner publishes no <code>UnitPlan</code> when any evaluation error exists. No partial matrix, layout set, rule set, or automaton from that source unit becomes live.</p>
+            </div>
+
+            <h3 id="immutability">Immutability</h3>
+            <p>The completed matrix is immutable by language semantics. ALAM exposes no index assignment, insertion, removal, sorting, row mutation, or in-place update.</p>
+            <p>A row itself is an immutable schema record. <code>with</code> may create a new record value but does not replace the row inside the original matrix.</p>
+
+            <h3 id="available-operations">Available operations</h3>
+            <p>The current expression language exposes no indexing, iteration, filtering, length query, concatenation, or slicing for lists. The principal operation designed for a matrix is <code>expand</code>, which applies one pure transform to every row.</p>
+            <p>A matrix value may also be passed to a compatible pure function accepting the exact list type, but the current standard library provides no general collection-processing functions.</p>
+
+            <h3 id="expand-order">Expansion order</h3>
+            <p><code>expand</code> visits rows in matrix source order. That order affects:</p>
+            <ul>
+                <li>layout production order;</li>
+                <li>synthesized generated-rule suffixes;</li>
+                <li>which generated layout key is considered the first unit-local producer;</li>
+                <li>the order of generated artifacts retained by the evaluator.</li>
+            </ul>
+
+            <pre class="synopsis"><code>row 0 -&gt; transform-name#0
+row 1 -&gt; transform-name#1
+row 2 -&gt; transform-name#2</code></pre>
+
+            <h3 id="empty-matrix">Empty matrix</h3>
+            <p>An empty matrix evaluates to an empty <code>Value.ListV</code>. Expanding it produces no artifacts and no diagnostic.</p>
+            <p>An empty expansion is not considered a malformed declaration. It may be useful when a generated policy table is intentionally empty in one source version.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff pure">pure</span> Every matrix cell is checked and evaluated under the pure allowance.</p>
+            <p>A query-capable built-in cannot be used to generate load-time table data. Runtime state belongs in guards, not matrix rows.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The AST preserves row and cell order directly:</p>
+                <pre><code class="language-java">record Matrix(
+    TypeRef schema,
+    String name,
+    List&lt;Row&gt; rows,
+    Pos pos
+) implements Decl {
+    record Row(
+        List&lt;Expr&gt; cells,
+        Pos pos
+    ) {
+    }
+}</code></pre>
+
+                <p>Elaboration requires a record schema and checks row arity:</p>
+                <pre><code class="language-java">final Type schemaType =
+    resolveType(matrix.schema());
+
+if (!(schemaType instanceof Rec rowType)) {
+    error(
+        "E002",
+        matrix.schema().pos(),
+        "matrix schema must be a record schema, not "
+            + show(schemaType)
+    );
+
+    throw Abort.INSTANCE;
+}
+
+define(
+    matrix.name(),
+    new Symbol.MatrixSym(
+        matrix.name(),
+        rowType,
+        matrix,
+        matrix.pos()
+    ),
+    matrix.pos()
+);
+
+for (final Decl.Matrix.Row row
+        : matrix.rows()) {
+    if (row.cells().size()
+            != rowType.fields().size()) {
+        error(
+            "E008",
+            row.pos(),
+            "row has "
+                + row.cells().size()
+                + " cell(s); schema '"
+                + rowType.name()
+                + "' declares "
+                + rowType.fields().size()
+                + " field(s)"
+        );
+
+        continue;
+    }
+
+    for (int i = 0;
+            i &lt; row.cells().size();
+            i++) {
+        check(
+            row.cells().get(i),
+            rowType.fields().get(i).type(),
+            emptyScope,
+            Effect.PURE
+        );
+    }
+}</code></pre>
+
+                <div class="callout note">
+                    <span class="label">Error collection detail</span>
+                    <p>An arity error reports against that row and continues checking later rows. A cell type or effect error uses the elaborator's abort sentinel and abandons the enclosing declaration after reporting.</p>
+                </div>
+
+                <p>Evaluation materializes rows as ordinary record values:</p>
+                <pre><code class="language-java">final Type.Rec rowType =
+    ((Symbol.MatrixSym) requireSymbol(
+        matrix.name()
+    )).rowType();
+
+final List&lt;Value&gt; items =
+    new ArrayList&lt;&gt;(matrix.rows().size());
+
+for (final Decl.Matrix.Row row
+        : matrix.rows()) {
+    final List&lt;Value&gt; cells =
+        new ArrayList&lt;&gt;(row.cells().size());
+
+    for (final Expr cell : row.cells()) {
+        cells.add(eval(cell, global));
+    }
+
+    items.add(new Value.RecordV(
+        rowType,
+        List.copyOf(cells)
+    ));
+}
+
+global.bind(
+    matrix.name(),
+    new Value.ListV(List.copyOf(items))
+);</code></pre>
+
+                <p>Name inference exposes the list type:</p>
+                <pre><code class="language-java">case Symbol.MatrixSym matrix -&gt;
+    new ListT(matrix.rowType());</code></pre>
+
+                <ul>
+                    <li>One matrix allocates one outer immutable list and one immutable field list per row.</li>
+                    <li>Cell values are not boxed into a separate row wrapper beyond <code>Value.RecordV</code>.</li>
+                    <li>The matrix is bound in the evaluator's root environment but is not included in <code>Evaluator.Output.constants</code>.</li>
+                    <li>A later closure may capture the root environment containing the matrix, although the language provides few runtime operations over lists.</li>
+                    <li>The root environment uses <code>HashMap&lt;String, Value&gt;</code> bindings.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Elaboration</dt>
+                    <dd>O(R × F + T), where R is row count, F schema field count, and T total cell type-checking cost.</dd>
+                    <dt>Evaluation</dt>
+                    <dd>O(C + E), where C is total cell count and E total cell-expression cost.</dd>
+                    <dt>Storage</dt>
+                    <dd>O(C + R) value references plus one shared schema type.</dd>
+                    <dt>Expansion</dt>
+                    <dd>O(R × X), where X is one transform application cost.</dd>
+                    <dt>Row field access</dt>
+                    <dd>O(F) name lookup under the current <code>Type.Rec</code> implementation.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">schema SanctionPolicy {
+    Text key;
+    Rule rule;
+    Text reason;
+    Measure measure;
+    Duration duration;
+    Int priority;
+}
+
+matrix&lt;SanctionPolicy&gt; policies {
+    row(
+        "chat-flood",
+        P.2.1,
+        "Repeated message flooding",
+        Measure::MUTE,
+        3h,
+        10
+    );
+
+    row(
+        "griefing",
+        P.3.2,
+        "Destruction of player structures",
+        Measure::SUSPENSION,
+        7d,
+        20
+    );
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>The schema type, name, row token, delimiter, semicolon, or closing brace is missing.</td></tr>
+                <tr><td><code>E002</code></td><td>Elaboration</td><td>The matrix type is unknown or is not a record schema.</td></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>A cell has a type incompatible with its positional schema field.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>A cell calls a query-capable function.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>A row has a different number of cells than the schema has fields.</td></tr>
+                <tr><td><code>E014</code></td><td>Elaboration</td><td>The matrix name duplicates an earlier global declaration.</td></tr>
+                <tr><td><code>V005</code></td><td>Evaluation</td><td>A cell performs integer division by zero.</td></tr>
+                <tr><td><code>V006</code></td><td>Evaluation</td><td>A cell overflows checked integer or duration arithmetic.</td></tr>
+                <tr><td><code>V008</code></td><td>Evaluation</td><td>A cell produces a negative duration or uses a negative duration factor.</td></tr>
+                <tr><td><code>V012</code></td><td>Evaluation</td><td>Function or template application from a cell exceeds the evaluation-depth bound.</td></tr>
+                <tr><td><code>V015</code></td><td>Evaluation</td><td>A cell evaluates an invalid Java regular expression.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>schema</code></td><td>Defines matrix row identity, arity, field types, and positional order.</td></tr>
+                <tr><td><code>transform</code></td><td>Defines the pure operation applied to each row.</td></tr>
+                <tr><td><code>expand</code></td><td>Visits rows in source order and contributes generated artifacts.</td></tr>
+                <tr><td><code>list</code></td><td>The homogeneous type under which the matrix name is exposed.</td></tr>
+                <tr><td><code>with</code></td><td>Creates a modified row value without mutating the matrix.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

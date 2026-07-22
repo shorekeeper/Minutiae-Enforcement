@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/measures">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Measures - Minutiae Enforcement</title>
+    <meta name="description" content="The seven enforcement measures: severity order, temporal classes, in-session effects, and commutation.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Measures</h1>
+            <p class="lede">A measure is the enforcement mechanism of a
+                sanction. There are seven, in a fixed severity order, each with
+                a temporal class that decides whether it takes a duration.</p>
+
+            <h2 id="table">The seven measures</h2>
+            <table>
+                <tr>
+                    <th>Measure</th><th>Severity</th><th>Temporal class</th>
+                    <th>Effect</th>
+                </tr>
+                <tr>
+                    <td><code>WARN</code></td><td>0</td>
+                    <td>instantaneous</td>
+                    <td>A formal warning delivered to the player and recorded
+                        against the rule's warning count.</td>
+                </tr>
+                <tr>
+                    <td><code>CENSURE</code></td><td>1</td>
+                    <td>instantaneous</td>
+                    <td>A recorded reprimand: like a warning in delivery, but
+                        counted as real precedent, not as a warning.</td>
+                </tr>
+                <tr>
+                    <td><code>MUTE</code></td><td>2</td>
+                    <td>temporal</td>
+                    <td>Chat and configured commands are suppressed; the player
+                        is told when they try.</td>
+                </tr>
+                <tr>
+                    <td><code>KICK</code></td><td>3</td>
+                    <td>instantaneous</td>
+                    <td>Immediate removal from the server. No lasting
+                        session effect.</td>
+                </tr>
+                <tr>
+                    <td><code>QUARANTINE</code></td><td>4</td>
+                    <td>temporal</td>
+                    <td>Confinement within the configured anchor radius.
+                        Also the mechanism behind <code>@remand</code>.</td>
+                </tr>
+                <tr>
+                    <td><code>SUSPENSION</code></td><td>5</td>
+                    <td>temporal</td>
+                    <td>A temporary ban: connection refused until expiry.</td>
+                </tr>
+                <tr>
+                    <td><code>CUSTODY</code></td><td>6</td>
+                    <td>permanent</td>
+                    <td>A permanent ban.</td>
+                </tr>
+            </table>
+
+            <h2 id="temporal">Temporal classes</h2>
+            <p>The class is enforced, not advisory - a violation is a
+                validation error at layout load or command resolve:</p>
+            <table class="items">
+                <tr><td>instantaneous</td>
+                    <td>WARN, CENSURE, KICK. The measure resolves at the moment
+                        of application; declaring a duration is an error.</td></tr>
+                <tr><td>temporal</td>
+                    <td>MUTE, QUARANTINE, SUSPENSION. A finite duration is
+                        mandatory - from the layout, the escalation ladder, or
+                        a <code>duration=</code> override.</td></tr>
+                <tr><td>permanent</td>
+                    <td>CUSTODY. The duration is fixed to permanent; a declared
+                        one is ignored.</td></tr>
+            </table>
+            <pre><code># Error: KICK takes no duration
+/enforce Steve @measure(KICK) duration=1h
+
+# Error: MUTE requires one
+/enforce Steve @measure(MUTE)
+
+# Correct
+/enforce Steve @measure(MUTE) duration=3h</code></pre>
+
+            <h2 id="severity">Severity and commutation</h2>
+            <p>The severity column is not decorative: it classifies every
+                <code>@commute</code> as mitigation (toward lower severity) or
+                aggravation (toward higher), and the two directions carry
+                separate permission nodes.</p>
+            <pre><code># CUSTODY(6) -> SUSPENSION(5): mitigation
+# needs minutiae.commute.mitigate (staff bundle)
+/enforce Steve ::cheating @commute(SUSPENSION) duration=30d
+
+# MUTE(2) -> SUSPENSION(5): aggravation
+# needs minutiae.commute.aggravate (admin bundle)
+/enforce Steve ::toxic @commute(SUSPENSION) duration=3d</code></pre>
+            <p>A junior tier can therefore soften configured policy but never
+                harden it - by permission structure, not by convention.</p>
+
+            <h2 id="blocking">Connection-blocking measures</h2>
+            <p>SUSPENSION and CUSTODY refuse the connection at login with a
+                localised refusal screen. Three things treat them specially:</p>
+            <ul>
+                <li><strong>Fingerprints.</strong> Connection signals are
+                    captured with the sanction and feed
+                    <a href="fingerprint.html">evasion detection</a>.</li>
+                <li><strong>Lifting.</strong> They require the dedicated
+                    <code>minutiae.lift.blocking</code> node to lift; see
+                    <a href="lift.html#gates">the target-dependent gates</a>.</li>
+                <li><strong>Shadowing.</strong> A ban carrying
+                    <code>@shadow</code> admits the player and isolates them
+                    on join instead of refusing at the door, so the ban is not
+                    revealed by the login screen.</li>
+            </ul>
+
+            <h2 id="behaviour-effects">Behavioural constraints and measures</h2>
+            <p>MUTE and QUARANTINE apply their in-session constraint through
+                the same machinery as the behavioural annotations
+                (<code>@ghost</code>, <code>@rubberband</code>,
+                <code>@shadow</code>). Consequences worth knowing:</p>
+            <ul>
+                <li>Overlapping constraints from several sanctions merge: the
+                    longest expiry per constraint wins, and lifting one
+                    sanction removes only its own contribution.</li>
+                <li>Constraints survive relogs: they are recomputed from
+                    active sanctions on every join.</li>
+                <li>On multi-server deployments, behavioural state propagates
+                    through the directive bus to whichever instance the player
+                    is on.</li>
+            </ul>
+
+            <h2 id="localised-names">Display names</h2>
+            <p>The identifiers in this page (<code>MUTE</code>,
+                <code>CUSTODY</code>) are command and configuration vocabulary.
+                What players and staff see is the localised display name from
+                the language bundle - "Temporary Ban", "Временный бан" - per
+                recipient. Renaming a measure for your audience is a bundle
+                edit, not a code concern; see
+                <a href="localization.html#measures">Localization</a>.</p>
+
+            <h2 id="choosing">Choosing a measure</h2>
+            <table class="items">
+                <tr><td>First minor offence</td>
+                    <td>Let <code>@warn-first</code> on the layout decide;
+                        do not hand-pick WARN.</td></tr>
+                <tr><td>Needs to sting, no lasting record of effect</td>
+                    <td>KICK, or CENSURE when you want precedent without
+                        removal.</td></tr>
+                <tr><td>Chat problem</td><td>MUTE.</td></tr>
+                <tr><td>Under investigation right now</td>
+                    <td><code>@remand</code> (quarantine holding action), not
+                        a hand-rolled QUARANTINE.</td></tr>
+                <tr><td>Serious, recoverable</td>
+                    <td>SUSPENSION with an escalation ladder ending in
+                        <code>permanent</code>.</td></tr>
+                <tr><td>Beyond recovery</td><td>CUSTODY.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

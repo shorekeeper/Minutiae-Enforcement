@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/rec/Layout">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Layout - ALAM reference</title>
+    <meta name="description" content="Reference for ALAM stamped layout descriptors, verification, lowering, registry ingestion, and runtime sanction use.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Sanction', href: 'Sanction.html', group: 'Records' },
+            { label: 'Text', href: '../type/Text.html', group: 'Field types' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'Measure', href: '../sum/Measure.html' },
+            { label: 'Duration term', href: '../sum/DurationTerm.html' },
+            { label: 'Escalation', href: '../sum/Escalation.html' },
+            { label: 'Annotation', href: '../sum/Annotation.html' },
+            { label: 'transform', href: '../keyword/transform.html', group: 'Produced by' },
+            { label: 'expand', href: '../keyword/expand.html' },
+            { label: 'R001', href: '../diag/R001.html', group: 'Diagnostics' },
+            { label: 'R002', href: '../diag/R002.html' },
+            { label: 'R003', href: '../diag/R003.html' },
+            { label: 'R004', href: '../diag/R004.html' },
+            { label: 'R005', href: '../diag/R005.html' },
+            { label: 'Layouts and escalation', href: '../../layouts.html', group: 'Operational docs' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Layout</h1>
+                <span class="entity-badge rec">record</span>
+            </div>
+            <p class="entity-def">A total compile-time descriptor that may be stamped into the ordinary layout registry and later selected by manual or automatic sanction resolution.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Built-in nominal record</td></tr>
+                <tr><th>Fields</th><td>7, all mandatory</td></tr>
+                <tr><th>Typical producer</th><td><code>transform</code> applied by <code>expand</code></td></tr>
+                <tr><th>Publication</th><td>Stamped <code>LayoutDefinition</code></td></tr>
+                <tr><th>Inheritance</th><td>Not expressible by the ALAM record</td></tr>
+                <tr><th>Private key</th><td>Not expressible by ALAM lowering</td></tr>
+                <tr><th>Runtime state</th><td>Immutable registry entry after boot</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Layout {
+    .key = key,
+    .rule = rule,
+    .reason = reason,
+    .measure = measure,
+    .duration = duration_term,
+    .escalation = escalation,
+    .annotations = annotations,
+}</code></pre>
+
+            <pre class="gram"><code>layout-construction =
+    "Layout" "{"
+        ".key" "=" text-expression ","
+        ".rule" "=" rule-expression ","
+        ".reason" "=" text-expression ","
+        ".measure" "=" measure-expression ","
+        ".duration" "=" duration-term-expression ","
+        ".escalation" "=" escalation-expression ","
+        ".annotations" "=" annotation-list
+        [ "," ]
+    "}" ;</code></pre>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                <tr>
+                    <td><code>key</code></td>
+                    <td><code>Text</code></td>
+                    <td>Yes</td>
+                    <td>Invocation key under which the stamped layout enters the registry.</td>
+                </tr>
+                <tr>
+                    <td><code>rule</code></td>
+                    <td><code>Rule</code></td>
+                    <td>Yes</td>
+                    <td>Primary external rule identifier used by sanctions selecting the layout.</td>
+                </tr>
+                <tr>
+                    <td><code>reason</code></td>
+                    <td><code>Text</code></td>
+                    <td>Yes</td>
+                    <td>Default sanction reason supplied by the layout.</td>
+                </tr>
+                <tr>
+                    <td><code>measure</code></td>
+                    <td><code>Measure</code></td>
+                    <td>Yes</td>
+                    <td>Default enforcement mechanism.</td>
+                </tr>
+                <tr>
+                    <td><code>duration</code></td>
+                    <td><code>Duration term</code></td>
+                    <td>Yes</td>
+                    <td>Fixed finite duration or the non-fixed term required by the measure's temporal class.</td>
+                </tr>
+                <tr>
+                    <td><code>escalation</code></td>
+                    <td><code>Escalation</code></td>
+                    <td>Yes</td>
+                    <td>Absent or explicit ordered duration ladder.</td>
+                </tr>
+                <tr>
+                    <td><code>annotations</code></td>
+                    <td><code>Annotation[]</code></td>
+                    <td>Yes</td>
+                    <td>Default configuration-scoped annotations applied when the layout is selected.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Structural requirements</span>
+                <ol>
+                    <li>Every field is supplied exactly once.</li>
+                    <li>No unknown field is supplied.</li>
+                    <li>Every field expression has the exact declared type.</li>
+                    <li>Construction and all producing transform logic remain pure.</li>
+                </ol>
+            </div>
+
+            <div class="normative">
+                <span class="normative-label">Post-evaluation verification</span>
+                <ol>
+                    <li><code>rule</code> exists in the external rule registry.</li>
+                    <li><code>measure</code> and <code>duration</code> satisfy the temporal invariant.</li>
+                    <li>An explicit escalation ladder is non-empty, contains positive fixed rungs, and places a permanent rung only at the end.</li>
+                    <li><code>key</code> is not blank.</li>
+                    <li>Every annotation constructor is valid in configuration scope.</li>
+                </ol>
+            </div>
+
+            <table>
+                <tr><th>Invariant</th><th>Diagnostic</th></tr>
+                <tr><td>Known rule identifier</td><td><code>R001</code></td></tr>
+                <tr><td>Measure-duration agreement</td><td><code>R002</code></td></tr>
+                <tr><td>Valid escalation ladder</td><td><code>R003</code></td></tr>
+                <tr><td>Non-blank key</td><td><code>R004</code></td></tr>
+                <tr><td>Configuration-scoped annotations only</td><td><code>R005</code></td></tr>
+            </table>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>Constructing a <code>Layout</code> value does not by itself publish a registry entry. A layout is stamped only when an <code>expand</code> declaration produces it.</p>
+
+            <div class="normative">
+                <span class="normative-label">Publication rule</span>
+                <p>A <code>const Layout</code> remains an ordinary compile-time value. It is not included in <code>Evaluator.Output.layouts</code> and is not visible to the runtime layout registry unless an expansion produces that value.</p>
+            </div>
+
+            <h3 id="key">key</h3>
+            <p>The key is used without the command prefix. A stamped key <code>"chat-flood"</code> is selected on the command surface as <code>::chat-flood</code>.</p>
+            <p>Keys must be unique within one compilation unit. Across ALAM files, the first accepted producer in lexical file-name order wins. A later collision is logged and dropped.</p>
+            <p>A key colliding with a file-authored entry in <code>layouts.yml</code> is also dropped. The file-authored definition remains authoritative.</p>
+
+            <h3 id="rule">rule</h3>
+            <p>The rule identifier becomes the layout's primary rule. It supplies precedent scope, rule description fallback in ordinary file-authored layouts, and the principal citation persisted with sanctions.</p>
+
+            <h3 id="reason">reason</h3>
+            <p>The reason is mandatory in ALAM. An empty string remains a present string after lowering.</p>
+            <div class="callout note">
+                <span class="label">Empty reason behavior</span>
+                <p>ALAM lowering does not convert empty text to null. Because the resolver treats any non-null layout reason as present, an empty ALAM layout reason does not fall back to the external rule description.</p>
+            </div>
+
+            <h3 id="measure-duration">measure and duration</h3>
+            <p>The verifier enforces the temporal relationship before lowering:</p>
+            <table>
+                <tr><th>Measure class</th><th>Required term</th><th>Lowered duration</th></tr>
+                <tr><td>Temporal</td><td><code>Duration::Fixed</code> with positive span</td><td>Finite <code>DurationSpec</code></td></tr>
+                <tr><td>Instantaneous</td><td><code>Duration::Permanent</code></td><td><code>null</code></td></tr>
+                <tr><td>Permanent</td><td><code>Duration::Permanent</code></td><td><code>null</code>; resolver derives permanent duration from measure</td></tr>
+            </table>
+
+            <h3 id="escalation">escalation</h3>
+            <p><code>Escalation::Steps</code> lowers to an ordered <code>DurationSpec[]</code>. <code>Escalation::None</code> lowers to an absent ladder in the raw stamped definition and ultimately to an empty array in the resolved layout.</p>
+            <p>The complete array is retained by the layout registry and is therefore available to sanction execution. This is the supported path for transporting an ALAM-defined escalation ladder.</p>
+
+            <h3 id="annotations">annotations</h3>
+            <p>Each constructor is converted to a configuration-surface <code>RawAnnotation</code>. The verifier rejects command-scoped constructors before lowering.</p>
+            <p>Layout annotations become defaults. Inline command annotations may replace or negate them when ordinary command semantics permit it. Permissions are still checked against the sender selecting the layout.</p>
+
+            <h3 id="inheritance">No ALAM inheritance fields</h3>
+            <p>The built-in ALAM record has no <code>extends</code> or private-key field. Lowering always creates:</p>
+            <pre class="synopsis"><code>isPrivate = false
+extendsKey = null</code></pre>
+            <p>An underscore-prefixed ALAM key is therefore not automatically private. Private inheritance bases remain a feature of file-authored <code>layouts.yml</code> definitions.</p>
+
+            <h3 id="registry-ingestion">Registry ingestion</h3>
+            <p>After all accepted ALAM units are planned, their stamped definitions are supplied to <code>LayoutRegistry</code>. The registry merges them with file-authored definitions, resolves structural inheritance, validates referential completeness, and publishes an immutable invocable map.</p>
+
+            <div class="normative">
+                <span class="normative-label">Whole-unit publication</span>
+                <p>If the source unit has an error in any compilation phase, no layout produced by that unit is stamped. Accepted sibling source files remain available.</p>
+            </div>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff pure">pure</span> Layout construction, transforms, matrix rows, and expansion are compile-time pure. Selecting the resulting layout later may cause queries and enforcement effects through the ordinary sanction path.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The built-in record is declared as:</p>
+                <pre><code class="language-java">public static final Rec LAYOUT =
+    new Rec("Layout", List.of(
+        new Field("key", TEXT),
+        new Field("rule", RULE),
+        new Field("reason", TEXT),
+        new Field("measure", MEASURE),
+        new Field("duration", DURATION_TERM),
+        new Field("escalation", ESCALATION_RESOLVED),
+        new Field("annotations", new ListT(ANNOTATION))
+    ));</code></pre>
+
+                <p><code>expand</code> recognizes the produced record by nominal type name and enforces unit-local key uniqueness:</p>
+                <pre><code class="language-java">case Value.RecordV rec
+        when rec.type().name()
+            .equals(Builtins.LAYOUT.name()) -&gt; {
+    final String key =
+        ((Value.TextV) rec.field("key")).value();
+
+    if (!layoutKeys.add(key)) {
+        error(
+            "V016",
+            x.pos(),
+            "duplicate layout key '" + key
+                + "' produced by expansion"
+        );
+        continue;
+    }
+
+    layouts.add(rec);
+}</code></pre>
+
+                <p>Lowering constructs a registry definition with no inheritance metadata:</p>
+                <pre><code class="language-java">return new LayoutDefinition(
+    key,
+    false,
+    null,
+    rule,
+    reason,
+    measure,
+    duration,
+    ladder,
+    List.copyOf(annotations)
+);</code></pre>
+
+                <p>Cross-file ALAM collisions use first-wins publication:</p>
+                <pre><code class="language-java">if (!layoutKeys.add(def.key())) {
+    log.warn(
+        "alam",
+        "%s: stamped layout '%s' dropped: "
+            + "key already stamped by an earlier unit",
+        file.getName(),
+        def.key()
+    );
+    continue;
+}</code></pre>
+
+                <p>File-authored definitions remain authoritative when the layout registry ingests stamped entries:</p>
+                <pre><code class="language-java">if (definitions.putIfAbsent(
+        def.key(),
+        def) != null) {
+    log.warn(
+        "layouts",
+        "stamped layout '%s' ignored: "
+            + "key already defined in '%s'",
+        def.key(),
+        fileName
+    );
+}</code></pre>
+
+                <ul>
+                    <li>Accepted unit plans and stamped definitions are published as immutable lists.</li>
+                    <li>The layout registry publishes its invocable map through one volatile reference.</li>
+                    <li>A stamped layout is treated like an ordinary raw definition after ingestion.</li>
+                    <li>The registry remains responsible for final rule existence and temporal completeness checks, even though ALAM verification has already established them for stamped data.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Construction</dt>
+                    <dd>O(A + N), where A is annotation count and N escalation-rung count.</dd>
+                    <dt>Unit-local key check</dt>
+                    <dd>Expected O(1) per produced layout.</dd>
+                    <dt>Verification</dt>
+                    <dd>O(A + N).</dd>
+                    <dt>Lowering</dt>
+                    <dd>O(A + N).</dd>
+                    <dt>Registry lookup</dt>
+                    <dd>Expected O(1) after publication.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">schema LayoutRow {
+    Text key;
+    Rule rule;
+    Text reason;
+    Measure measure;
+    Duration span;
+}
+
+matrix&lt;LayoutRow&gt; layouts {
+    row(
+        "chat-flood",
+        P.2.1,
+        "Repeated message flooding",
+        Measure::MUTE,
+        3h
+    );
+}
+
+transform&lt;LayoutRow -&gt; Layout&gt; stamp_layout =
+    (entry) -&gt; Layout {
+        .key = entry.key,
+        .rule = entry.rule,
+        .reason = entry.reason,
+        .measure = entry.measure,
+        .duration = Duration::Fixed(entry.span),
+        .escalation = Escalation::Steps({
+            Duration::Fixed(entry.span),
+            Duration::Fixed(entry.span * 4),
+            Duration::Permanent,
+        }),
+        .annotations = {
+            Annotation::Escalate,
+            Annotation::Notify("staff"),
+        },
+    };
+
+expand stamp_layout(layouts);</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>A field expression has the wrong type.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>The construction contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>One or more mandatory fields are absent.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>Construction or its producing transform calls a query-capable function.</td></tr>
+                <tr><td><code>V016</code></td><td>Evaluation</td><td>Two expansions in one unit produce the same layout key.</td></tr>
+                <tr><td><code>R001</code></td><td>Verification</td><td>The primary rule does not exist.</td></tr>
+                <tr><td><code>R002</code></td><td>Verification</td><td>The measure and duration term violate the temporal invariant.</td></tr>
+                <tr><td><code>R003</code></td><td>Verification</td><td>The escalation ladder is invalid.</td></tr>
+                <tr><td><code>R004</code></td><td>Verification</td><td>The layout key is blank.</td></tr>
+                <tr><td><code>R005</code></td><td>Verification</td><td>The annotations list contains a command-scoped constructor.</td></tr>
+            </table>
+            <p>Cross-file and file-versus-ALAM key collisions are operator warnings rather than compiler diagnostics because they are detected during service publication after individual units have been planned.</p>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Sanction</code></td><td>Runtime verdict descriptor resolved after a rule fires.</td></tr>
+                <tr><td><code>transform</code></td><td>Common producer of layout values from matrix rows.</td></tr>
+                <tr><td><code>expand</code></td><td>Required publication mechanism for stamped layout values.</td></tr>
+                <tr><td><code>Escalation::Steps</code></td><td>Complete ladder transported by a stamped layout.</td></tr>
+                <tr><td><code>Annotation</code></td><td>Configuration-scoped defaults attached to the layout.</td></tr>
+                <tr><td>Layouts and escalation</td><td>Operational registry inheritance, command selection, and precedent behavior.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

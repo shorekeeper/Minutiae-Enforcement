@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/ctor/Attribution.Staff">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Attribution::Staff - ALAM reference</title>
+    <meta name="description" content="Reference for explicit staff-name attribution of an ALAM-produced sanction and its permission and ownership consequences.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Attribution', href: '../sum/Attribution.html', group: 'Container' },
+            { label: 'Attribution::System', href: '../sum/Attribution.html#System', group: 'Sibling' },
+            { label: 'Text', href: '../type/Text.html', group: 'Depends on' },
+            { label: 'Sanction.attribution', href: '../rec/Sanction.html#fields', group: 'Consumed by' },
+            { label: 'DryRun', href: '../sum/DryRun.html' },
+            { label: 'Permissions', href: '../../permissions.html', group: 'Operational docs' },
+            { label: 'Lifting sanctions', href: '../../lift.html#gates' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Attribution::Staff</h1>
+                <span class="entity-badge ctor">constructor</span>
+            </div>
+            <p class="entity-def">Requests that an automatically produced sanction be recorded under one explicit staff display name.</p>
+
+            <table class="entity-meta">
+                <tr><th>Container</th><td><code>Attribution</code></td></tr>
+                <tr><th>Category</th><td>Explicit attribution constructor</td></tr>
+                <tr><th>Payload</th><td>One <code>Text</code> name</td></tr>
+                <tr><th>Materialized form</th><td><code>@as(name)</code></td></tr>
+                <tr><th>Required permission</th><td><code>minutiae.annotation.as</code></td></tr>
+                <tr><th>Persisted field</th><td><code>bans.staff</code></td></tr>
+                <tr><th>Runtime state</th><td>None</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Attribution::Staff(name)                                   (1)
+
+Attribution::Staff {
+    .name = name,
+}                                                           (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Positional construction.</span></li>
+                <li><span class="decl-no">(2)</span><span>Named-field construction.</span></li>
+            </ul>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                <tr>
+                    <td><code>name</code></td>
+                    <td><code>Text</code></td>
+                    <td>Yes</td>
+                    <td>Display name persisted as the sanction's attributed staff identity.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The constructor requires exactly one <code>Text</code> value.</li>
+                <li>The system actor must hold <code>minutiae.annotation.as</code>.</li>
+                <li>The name is not resolved against online players, account history, a staff registry, or rank configuration.</li>
+                <li>The current validator requires one positional value but does not require non-empty text.</li>
+                <li>Attribution does not grant the named staff member's permissions to automation.</li>
+                <li>Attribution does not change the command sender that receives success and failure reports.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The constructor materializes to:</p>
+            <pre class="synopsis"><code>@as(name)</code></pre>
+            <p>The shared resolver checks the system actor's permission and stores the supplied text as <code>ResolvedSanction.attributedStaff</code>.</p>
+            <p>At execution, the persisted staff name is selected as:</p>
+            <pre class="synopsis"><code>staff =
+    attributedStaff != null
+        ? attributedStaff
+        : issuer.getName()</code></pre>
+
+            <h3 id="consequences">Observable consequences</h3>
+            <p>The explicit name affects more than display. It becomes the authoritative staff string used by several subsystems:</p>
+            <ul>
+                <li>the sanction row;</li>
+                <li>issuer lines in reports;</li>
+                <li>public sanction broadcasts;</li>
+                <li>notification summaries;</li>
+                <li>staff-based case queries;</li>
+                <li>bulk-lift criteria by staff name;</li>
+                <li>foreign-lift ownership checks.</li>
+            </ul>
+
+            <div class="normative">
+                <span class="normative-label">Ownership consequence</span>
+                <p>A later sender whose name differs from the stored attributed name is treated as lifting another staff member's sanction and requires <code>minutiae.lift.foreign</code>.</p>
+            </div>
+
+            <h3 id="authority">Authority remains with the system actor</h3>
+            <p>Permission checks continue to use the configured system actor predicate. Naming <code>"Administrator"</code> does not grant administrator permissions, and naming a real player does not consult that player's effective permission set.</p>
+
+            <h3 id="rank">Rank display distinction</h3>
+            <p>The rank identifier used by broadcasts is resolved from the actual issuing <code>CommandSender</code>. The attributed name and displayed rank may therefore refer to different conceptual identities.</p>
+            <p>For automatic dispatch, the issuer is normally the console sender while the stored staff name is the supplied constructor text.</p>
+
+            <h3 id="empty-name">Empty name</h3>
+            <p>An empty <code>Text</code> payload is accepted by current structural and command parameter validation. Because the value is non-null, the executor persists the empty string rather than falling back to the issuer name.</p>
+            <div class="callout warn">
+                <span class="label">Recommendation</span>
+                <p>Use a non-empty stable attribution name. The compiler does not currently enforce this operational requirement.</p>
+            </div>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The constructor is represented as one text field:</p>
+                <pre><code class="language-java">new Ctor(
+    "Staff",
+    List.of(new Field("name", TEXT))
+)</code></pre>
+
+                <p>Materialization appends the command annotation immediately:</p>
+                <pre><code class="language-java">if (attribution.ctor().equals("Staff")) {
+    annotations.add(directive(
+        "as",
+        ((Value.TextV) attribution.field(0)).value()
+    ));
+} else {
+    systemAttribution = true;
+}</code></pre>
+
+                <p>The resolver extracts the first positional parameter:</p>
+                <pre><code class="language-java">final String attributedStaff =
+    firstPositional(effective, "as");</code></pre>
+
+                <p>The executor persists the selected name:</p>
+                <pre><code class="language-java">final String staff =
+    r.attributedStaff() != null
+        ? r.attributedStaff()
+        : issuer.getName();</code></pre>
+
+                <ul>
+                    <li>The annotation permission follows the catalog convention <code>minutiae.annotation.as</code>.</li>
+                    <li>The attributed name is plain text and is not a UUID.</li>
+                    <li>Rank resolution happens separately through <code>RankConfig.resolve(issuer)</code>.</li>
+                    <li>Audit actions performed later record their own acting sender rather than automatically reusing the sanction attribution.</li>
+                    <li>The web and command surfaces may impose different bounded permission predicates, but both use the same resolver.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Materialization</dt>
+                    <dd>O(L), where L is the attributed-name length.</dd>
+                    <dt>Permission check</dt>
+                    <dd>Expected O(1) against the configured system actor set.</dd>
+                    <dt>Persistence</dt>
+                    <dd>O(L) database text.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">.attribution =
+    Attribution::Staff("Automated Review Service"),</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The staff name has a type other than <code>Text</code>.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>The named form contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>The named form omits <code>name</code>.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The positional form has the wrong arity.</td></tr>
+                <tr><td><code>E035</code></td><td>Elaboration</td><td>The constructor is referenced without its required name.</td></tr>
+            </table>
+            <p>Missing attribution permission is reported by the shared sanction resolver rather than by an ALAM compiler diagnostic.</p>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Attribution</code></td><td>The containing sum and configured system alternative.</td></tr>
+                <tr><td><code>Attribution::System</code></td><td>Requests the configured automation actor name when permission permits it.</td></tr>
+                <tr><td><code>Sanction</code></td><td>Total descriptor containing the mandatory attribution field.</td></tr>
+                <tr><td>Permissions</td><td>Operational grant required to apply explicit attribution.</td></tr>
+                <tr><td>Lifting sanctions</td><td>Explains the foreign-lift ownership gate affected by stored attribution.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

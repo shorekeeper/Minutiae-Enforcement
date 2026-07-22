@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/type/Bool">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bool - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM boolean type, short-circuit operators, and guard results.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Int', href: 'Int.html', group: 'Primitive types' },
+            { label: 'Real', href: 'Real.html' },
+            { label: 'Text', href: 'Text.html' },
+            { label: 'guard', href: '../keyword/rule.html#guard', group: 'Produced by' },
+            { label: 'Guard::Always', href: '../fn/Guard.Always.html' },
+            { label: 'match', href: '../keyword/match.html', group: 'Used by' },
+            { label: 'Effects', href: '../guide/effects.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Bool</h1>
+                <span class="entity-badge type">type</span>
+            </div>
+            <p class="entity-def">A two-valued logical type whose values are <code>true</code> and <code>false</code>.</p>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="gram"><code>boolean-type = "Bool" ;
+boolean-literal = "true" | "false" ;
+
+boolean-expression =
+      "!" boolean-expression
+    | boolean-expression "&amp;&amp;" boolean-expression
+    | boolean-expression "||" boolean-expression ;</code></pre>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The operands of <code>!</code>, <code>&amp;&amp;</code>, and <code>||</code> must have type <code>Bool</code>.</li>
+                <li>A rule guard and every template constraint must produce <code>Bool</code>.</li>
+                <li>ALAM does not convert numbers, text, records, or nullary constructors to boolean values.</li>
+                <li><code>Bool</code> supports equality but not ordering or arithmetic.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <table>
+                <tr><th>Operation</th><th>Behavior</th></tr>
+                <tr><td><code>!value</code></td><td>Logical negation.</td></tr>
+                <tr><td><code>left &amp;&amp; right</code></td><td>Evaluates <code>right</code> only when <code>left</code> is true.</td></tr>
+                <tr><td><code>left || right</code></td><td>Evaluates <code>right</code> only when <code>left</code> is false.</td></tr>
+                <tr><td><code>==</code>, <code>!=</code></td><td>Exact boolean equality and inequality.</td></tr>
+            </table>
+            <p>Short-circuit behavior applies at compile time and runtime. A query, arithmetic failure, or invalid operation in the unselected right operand is not evaluated.</p>
+
+            <h3 id="java-implementation">Under the Java implementation</h3>
+            <p>A boolean value is represented by <code>Value.BoolV(boolean)</code>. The compile-time evaluator and runtime interpreter implement conjunction and disjunction before their ordinary two-operand path, so the right expression is evaluated conditionally.</p>
+            <p>A guard result is accepted only when the interpreter returns <code>Value.BoolV</code>. Any other value or interpreter failure suppresses the firing.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Bool require_precedent = true;
+
+rule&lt;Chat&gt; repeated_flood {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            !require_precedent
+            || precedent(event.subject, P.2.1) &gt; 0;
+    }
+    =&gt; verdict = flood_verdict&lt;Measure::MUTE, 3h&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="items diag-list">
+                <tr><td><code>E003</code></td><td>A guard, constraint, or other boolean position receives a different type.</td></tr>
+                <tr><td><code>E019</code></td><td>A boolean operator receives an unsupported operand type.</td></tr>
+                <tr><td><code>E032</code></td><td>An equality expression compares incompatible types.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>guard</code></td><td>Rule clause whose function result is <code>Bool</code>.</td></tr>
+                <tr><td><code>Guard::Always</code></td><td>Distinguished guard that always returns true.</td></tr>
+                <tr><td><code>match</code></td><td>May select a boolean result through exhaustive arms.</td></tr>
+                <tr><td>Effects</td><td>Determines which operations may be used while computing a boolean condition.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

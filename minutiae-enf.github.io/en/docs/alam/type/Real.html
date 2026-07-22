@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/type/Real">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Real - ALAM reference</title>
+    <meta name="description" content="Reference for ALAM IEEE-754 double-precision real values.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Int', href: 'Int.html', group: 'Numeric types' },
+            { label: 'Duration', href: 'Duration.html' },
+            { label: 'Bool', href: 'Bool.html', group: 'Results' },
+            { label: 'Evasion', href: '../event/Evasion.html', group: 'Used by' },
+            { label: 'fingerprint_score', href: '../fn/fingerprint_score.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Real</h1>
+                <span class="entity-badge type">type</span>
+            </div>
+            <p class="entity-def">An IEEE-754 double-precision floating-point value used for continuous scores and numeric calculations.</p>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="gram"><code>real-type = "Real" ;
+real-literal =
+    digit, { digit }, ".", digit, { digit } ;</code></pre>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>A real literal requires at least one digit on both sides of the decimal point.</li>
+                <li>A leading sign is a separate unary operator.</li>
+                <li>ALAM does not implicitly convert <code>Int</code> to <code>Real</code> or <code>Real</code> to <code>Int</code>.</li>
+                <li>Both operands of real arithmetic, ordering, or equality must have type <code>Real</code>.</li>
+                <li><code>Real</code> cannot scale <code>Duration</code>; duration scaling accepts <code>Int</code> only.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <table class="items">
+                <tr><td><code>+</code>, <code>-</code>, <code>*</code>, <code>/</code></td><td>IEEE-754 double arithmetic.</td></tr>
+                <tr><td><code>-value</code></td><td>Floating-point negation.</td></tr>
+                <tr><td><code>&lt; &gt; &lt;= &gt;=</code></td><td>Ordering through Java <code>Double.compare</code>.</td></tr>
+                <tr><td><code>== !=</code></td><td>Equality through <code>Double.compare</code>, not approximate equality.</td></tr>
+            </table>
+            <p>Real division by zero follows IEEE-754 behavior and may produce infinity or NaN. It does not produce the integer division diagnostic <code>V005</code>.</p>
+            <p>The source grammar has no literals for NaN or infinity. Such values may still arise from runtime arithmetic.</p>
+
+            <h3 id="java-implementation">Under the Java implementation</h3>
+            <p>The lexer decodes a literal once with <code>Double.parseDouble</code> and stores its raw bits in the token buffer. The AST stores the decoded value in <code>Expr.RealLit</code>. Evaluation represents it as <code>Value.RealV(double)</code>.</p>
+            <p>Runtime event adaptation accepts any Java <code>Number</code> for a real event field and calls <code>doubleValue()</code>. An absent or incompatible fact becomes <code>0.0</code>.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Real evasion_threshold = 0.90;
+
+rule&lt;Evasion&gt; high_confidence_evasion {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt; event.score &gt;= evasion_threshold;
+    }
+    =&gt; verdict = evasion_verdict&lt;Measure::CUSTODY&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="items diag-list">
+                <tr><td><code>E003</code></td><td>A real position receives a different type.</td></tr>
+                <tr><td><code>E019</code></td><td>An operator is not defined for the supplied operand types.</td></tr>
+                <tr><td><code>E032</code></td><td>Equality compares incompatible types.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Int</code></td><td>Checked signed integer arithmetic.</td></tr>
+                <tr><td><code>Evasion</code></td><td>Event whose <code>score</code> field has type <code>Real</code>.</td></tr>
+                <tr><td><code>fingerprint_score</code></td><td>Query function returning an evasion score.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

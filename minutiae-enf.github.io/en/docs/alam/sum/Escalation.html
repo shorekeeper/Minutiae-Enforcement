@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/sum/Escalation">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Escalation - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM Escalation sum type, absent escalation, and explicit duration ladders.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Escalation::Steps', href: '../ctor/Escalation.Steps.html', group: 'Constructors' },
+            { label: 'Duration term', href: 'DurationTerm.html', group: 'Depends on' },
+            { label: 'Measure', href: 'Measure.html' },
+            { label: 'Layout', href: '../rec/Layout.html', group: 'Used by' },
+            { label: 'Sanction', href: '../rec/Sanction.html' },
+            { label: 'R003', href: '../diag/R003.html', group: 'Diagnostics' },
+            { label: 'Layouts and escalation', href: '../../layouts.html', group: 'Operational docs' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Escalation</h1>
+                <span class="entity-badge sum">sum</span>
+            </div>
+            <p class="entity-def">The closed descriptor type representing either the absence of a duration ladder or an explicit ordered ladder of duration terms.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Built-in sum type</td></tr>
+                <tr><th>Constructors</th><td>2</td></tr>
+                <tr><th>Type namespace</th><td><code>Escalation</code></td></tr>
+                <tr><th>Value namespace</th><td><code>Escalation::*</code></td></tr>
+                <tr><th>Element type</th><td><code>Duration term</code></td></tr>
+                <tr><th>Consumed by</th><td><code>Layout</code>, <code>Sanction</code></td></tr>
+                <tr><th>Runtime state</th><td>None in the ALAM interpreter</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Escalation::None                                           (1)
+
+Escalation::Steps(steps)                                   (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Declares that no escalation ladder is present.</span></li>
+                <li><span class="decl-no">(2)</span><span>Declares an ordered list of fixed or permanent duration terms.</span></li>
+            </ul>
+
+            <pre class="gram"><code>escalation =
+      Escalation::None
+    | Escalation::Steps(
+          duration-term-list
+      ) ;
+
+duration-term-list =
+    "{"
+        duration-term
+        { "," duration-term }
+        [ "," ]
+    "}" ;</code></pre>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Constructor</th><th>Field</th><th>Type</th><th>Description</th></tr>
+                <tr>
+                    <td><code>Escalation::None</code></td>
+                    <td>None</td>
+                    <td>-</td>
+                    <td>Represents absence of an escalation ladder.</td>
+                </tr>
+                <tr>
+                    <td><code>Escalation::Steps</code></td>
+                    <td><code>steps</code></td>
+                    <td><code>Duration term[]</code></td>
+                    <td>Ordered ladder indexed by applicable precedent.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Valid layout ladder</span>
+                <ol>
+                    <li>The <code>steps</code> list is non-empty.</li>
+                    <li>Every <code>Duration::Fixed</code> rung contains a positive finite span.</li>
+                    <li><code>Duration::Permanent</code>, when present, is the final rung.</li>
+                    <li>No rung follows a permanent rung.</li>
+                </ol>
+            </div>
+            <p>These residual ladder invariants are verified for stamped <code>Layout</code> values after compile-time evaluation. A violation produces <code>R003</code>.</p>
+            <p>The type system establishes only that the field is a homogeneous list of duration terms. It cannot establish non-emptiness, positivity, or final-rung placement before evaluation.</p>
+
+            <h2 id="semantics">Semantics</h2>
+
+            <h3 id="None">Escalation::None</h3>
+            <pre class="sig"><code class="language-alam">Escalation::None</code></pre>
+            <p>Specifies no ladder. A layout lowered with this constructor exposes no escalation array to the ordinary sanction resolver.</p>
+            <p>The constructor does not prevent an annotation or command directive named <code>escalate</code> from being present. Such a directive has no useful ladder to select from and therefore cannot derive a rung from this descriptor.</p>
+
+            <h3 id="steps-semantics">Escalation::Steps</h3>
+            <p>The ordered list represents increasingly severe duration outcomes. Operational execution selects a rung using prior non-warning sanctions:</p>
+            <pre class="synopsis"><code>index = min(prior_sanctions, steps.length - 1)</code></pre>
+            <p>The final rung therefore repeats for every precedent count beyond the list length.</p>
+            <p>When the subject is inside an active probation window, policy may either advance one additional rung or multiply the selected finite span. That behavior belongs to runtime escalation configuration rather than the ALAM sum itself.</p>
+
+            <div class="normative">
+                <span class="normative-label">Descriptor transport distinction</span>
+                <p>A ladder stored in a stamped <code>Layout</code> is lowered to the layout registry and is available to sanction execution. A ladder placed directly in a runtime-produced <code>Sanction</code> is currently materialized as the presence of the <code>escalate</code> directive; its individual rung values are not transported through the manual command surface.</p>
+            </div>
+
+            <p>This distinction means that reusable duration ladders should normally be stamped into layouts. A verdict that directly constructs a sanction should not rely on transporting an arbitrary private ladder to the resolver.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The built-in type is declared with a homogeneous list field:</p>
+                <pre><code class="language-java">public static final Sum ESCALATION_RESOLVED =
+    new Sum("Escalation", List.of(
+        new Ctor("None", List.of()),
+        new Ctor("Steps", List.of(
+            new Field("steps", new ListT(DURATION_TERM))
+        ))
+    ));</code></pre>
+                <p>Layout lowering converts the value to a Java array:</p>
+                <pre><code class="language-java">final DurationSpec[] ladder;
+if (escalation.ctor().equals("Steps")) {
+    final List&lt;Value&gt; steps =
+            ((Value.ListV) escalation.field(0)).items();
+    ladder = new DurationSpec[steps.size()];
+    // Each Fixed or Permanent term is lowered in order.
+} else {
+    ladder = null;
+}</code></pre>
+                <p>At sanction execution, the selected rung is computed from persisted precedent:</p>
+                <pre><code class="language-java">int index = Math.min(
+        precedent.priorSanctions(),
+        r.escalation().length - 1
+);
+base = r.escalation()[index];</code></pre>
+                <ul>
+                    <li>The resolver stores a layout ladder as <code>DurationSpec[]</code>.</li>
+                    <li>An explicit command <code>duration=</code> override bypasses ladder selection.</li>
+                    <li>A tariff annotation may raise the selected finite duration to a configured floor.</li>
+                    <li>A permanent rung is represented by <code>DurationSpec.PERMANENT</code>.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Construction</dt>
+                    <dd>O(N) time and storage for N duration terms.</dd>
+                    <dt>Verification</dt>
+                    <dd>O(N) over the ladder.</dd>
+                    <dt>Rung selection</dt>
+                    <dd>O(1) after lowering to an array.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Escalation chat_ladder = Escalation::Steps({
+    Duration::Fixed(1h),
+    Duration::Fixed(1d),
+    Duration::Fixed(7d),
+    Duration::Permanent,
+});
+
+const Layout repeated_flood = Layout {
+    .key = "repeated-flood",
+    .rule = P.2.1,
+    .reason = "Repeated message flooding",
+    .measure = Measure::MUTE,
+    .duration = Duration::Fixed(1h),
+    .escalation = chat_ladder,
+    .annotations = {
+        Annotation::Escalate,
+    },
+};</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The <code>steps</code> field contains values of another type.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td><code>Escalation::Steps</code> receives the wrong number of arguments.</td></tr>
+                <tr><td><code>E035</code></td><td>Elaboration</td><td><code>Escalation::Steps</code> is referenced without its required list.</td></tr>
+                <tr><td><code>R003</code></td><td>Verification</td><td>A layout ladder is empty, contains a non-positive fixed rung, or places a permanent rung before the end.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Escalation::Steps</code></td><td>Constructor reference for an explicit ladder.</td></tr>
+                <tr><td><code>Duration term</code></td><td>Element type of each ladder rung.</td></tr>
+                <tr><td><code>Layout</code></td><td>Primary descriptor that transports a ladder to sanction execution.</td></tr>
+                <tr><td><code>Sanction</code></td><td>Runtime verdict descriptor containing an escalation term.</td></tr>
+                <tr><td><code>Measure</code></td><td>Determines whether a selected duration is operationally meaningful.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

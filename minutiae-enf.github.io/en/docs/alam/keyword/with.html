@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/with">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>with - ALAM reference</title>
+    <meta name="description" content="Detailed reference for immutable ALAM record updates, evaluation order, supported receiver types, duplicate fields, and Java storage behavior.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'schema', href: 'schema.html', group: 'Record types' },
+            { label: 'Sanction', href: '../rec/Sanction.html' },
+            { label: 'Layout', href: '../rec/Layout.html' },
+            { label: 'transform', href: 'transform.html', group: 'Common use' },
+            { label: 'const', href: 'const.html' },
+            { label: 'P010', href: '../diag/P010.html', group: 'Diagnostics' },
+            { label: 'E003', href: '../diag/E003.html' },
+            { label: 'E004', href: '../diag/E004.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>with</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Creates a new value of the same nominal record type by copying a base record and replacing selected fields.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Postfix value expression</td></tr>
+                <tr><th>Receiver</th><td>Nominal <code>Type.Rec</code> only</td></tr>
+                <tr><th>Result</th><td>Same nominal record type as the receiver</td></tr>
+                <tr><th>Mutation</th><td>None</td></tr>
+                <tr><th>Evaluation order</th><td>Base first, then replacements in source order</td></tr>
+                <tr><th>Empty update</th><td>Permitted</td></tr>
+                <tr><th>Java representation</th><td>Fresh <code>Value.RecordV</code> with copied field list</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>base with {
+    .field = replacement,
+    ...
+}</code></pre>
+
+            <pre class="gram"><code>with-expression =
+    base-expression
+    "with" "{"
+        [ field-update
+          { "," field-update }
+          [ "," ] ]
+    "}" ;
+
+field-update =
+    "." field-name
+    "=" expression ;</code></pre>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Part</th><th>Required type</th><th>Description</th></tr>
+                <tr><td>Base</td><td>Nominal record</td><td>Value copied before replacements are evaluated.</td></tr>
+                <tr><td>Field name</td><td>Existing member of the base type</td><td>Selects one ordered field index.</td></tr>
+                <tr><td>Replacement</td><td>Exact field type</td><td>Value stored at the selected index in the result.</td></tr>
+                <tr><td>Result</td><td>Same record type as base</td><td>Fresh immutable record value.</td></tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The base is not a nominal record type.</li>
+                    <li>An update names a field absent from the base record.</li>
+                    <li>A replacement is not assignable to the selected field type.</li>
+                    <li>The same field appears more than once in one update body.</li>
+                    <li>A replacement requires an effect not permitted by the surrounding position.</li>
+                </ol>
+            </div>
+
+            <p>The receiver must be <code>Type.Rec</code>. The current implementation does not permit <code>with</code> on:</p>
+            <ul>
+                <li>concrete event records, which use <code>Type.Event</code> statically;</li>
+                <li>sum variants, including constructors with named fields;</li>
+                <li><code>Step</code> values;</li>
+                <li>structural <code>Rule&lt;...&gt;</code> values;</li>
+                <li>lists or primitive values.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <ol>
+                <li>Evaluate the base expression exactly once.</li>
+                <li>Copy its ordered field-value list.</li>
+                <li>Evaluate replacement expressions from left to right.</li>
+                <li>For each replacement, find the field index in the nominal record type.</li>
+                <li>Replace the value at that index in the copied list.</li>
+                <li>Publish a new immutable record value.</li>
+            </ol>
+
+            <div class="normative">
+                <span class="normative-label">No sequential update bindings</span>
+                <p>A replacement expression does not receive an implicit name for the partially updated record. Later replacements cannot refer to earlier replacement results unless those values are independently available through surrounding expressions.</p>
+            </div>
+
+            <h3 id="immutability">Immutability</h3>
+            <p>The base record and its backing immutable field list remain unchanged. Other constants or closures referencing the base continue to observe the original value.</p>
+
+            <h3 id="empty-update">Empty update</h3>
+            <pre><code class="language-alam">const Layout copy = base_layout with {};</code></pre>
+            <p>An empty update creates a new <code>Value.RecordV</code> and a copied field list containing equal field references. It does not return the original record object.</p>
+
+            <h3 id="duplicate-fields">Duplicate fields</h3>
+            <p>The parser reports <code>P010</code> when one field appears more than once. It still retains the duplicate initializers in the temporary AST, but the error prevents successful planning and evaluation publication.</p>
+            <p>There is therefore no supported last-value-wins behavior for duplicate fields.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p>The update operation itself is pure. The base and replacements inherit the effect allowance of the surrounding position.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>Elaboration restricts the receiver to <code>Type.Rec</code>:</p>
+                <pre><code class="language-java">final Type base =
+    infer(update.base(), scope, allowed);
+
+if (!(base instanceof Rec record)) {
+    error(
+        "E003",
+        update.pos(),
+        "'with' requires a record value, not "
+            + show(base)
+    );
+
+    throw Abort.INSTANCE;
+}</code></pre>
+
+                <p>Each replacement is checked against a linear field lookup:</p>
+                <pre><code class="language-java">final int index =
+    record.fieldIndex(field.name());
+
+if (index &lt; 0) {
+    error(
+        "E004",
+        field.pos(),
+        "record "
+            + record.name()
+            + " has no field '."
+            + field.name()
+            + "'"
+    );
+
+    throw Abort.INSTANCE;
+}
+
+check(
+    field.value(),
+    record.fields().get(index).type(),
+    scope,
+    allowed
+);</code></pre>
+
+                <p>Evaluation clones and updates the field list:</p>
+                <pre><code class="language-java">final Value.RecordV base =
+    (Value.RecordV) eval(
+        update.base(),
+        env
+    );
+
+final List&lt;Value&gt; fields =
+    new ArrayList&lt;&gt;(base.fields());
+
+for (final Expr.FieldInit field
+        : update.fields()) {
+    fields.set(
+        base.type().fieldIndex(
+            field.name()
+        ),
+        eval(field.value(), env)
+    );
+}
+
+return new Value.RecordV(
+    base.type(),
+    List.copyOf(fields)
+);</code></pre>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Base copy</dt><dd>O(F), where F is record field count.</dd>
+                    <dt>Field lookup</dt><dd>O(F) per replacement.</dd>
+                    <dt>Total update</dt><dd>O(F + U × F + E), where U is update count and E replacement evaluation cost.</dd>
+                    <dt>Storage</dt><dd>O(F) references for the new field list.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Layout base_layout = Layout {
+    .key = "chat-base",
+    .rule = P.2.1,
+    .reason = "Chat violation",
+    .measure = Measure::MUTE,
+    .duration = Duration::Fixed(1h),
+    .escalation = Escalation::None,
+    .annotations = {},
+};
+
+const Layout severe_layout =
+    base_layout with {
+        .key = "chat-severe",
+        .duration = Duration::Fixed(1d),
+        .annotations = {
+            Annotation::Notify("staff"),
+        },
+    };</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>A field name, assignment, expression, delimiter, or closing brace is missing.</td></tr>
+                <tr><td><code>P010</code></td><td>Parsing</td><td>The update initializes one field more than once.</td></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The base is not a nominal record or a replacement has the wrong type.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>An update names a field absent from the base type.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>A replacement calls a query function in a pure surrounding position.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>schema</code></td><td>Defines nominal user records accepted by <code>with</code>.</td></tr>
+                <tr><td><code>Layout</code></td><td>Built-in record commonly refined by compile-time updates.</td></tr>
+                <tr><td><code>Sanction</code></td><td>Built-in record that may be functionally updated inside a pure verdict.</td></tr>
+                <tr><td><code>transform</code></td><td>Common pure context for record refinement.</td></tr>
+            </table>
+
+            <footer class="site-footer"><span>Minutiae Enforcement</span><a href="../">ALAM reference</a></footer>
+        </article>
+    </main>
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

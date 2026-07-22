@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/fingerprint">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Evasion detection - Minutiae Enforcement</title>
+    <meta name="description" content="How the fingerprint model scores logins against banned accounts, what the signals mean, and how to tune it.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Evasion detection</h1>
+            <p class="lede">When a banned player returns on a fresh account,
+                the connection itself betrays them. The fingerprint subsystem
+                scores every login against the recorded signals of banned
+                accounts and alerts staff when the match is strong. It never
+                bans anyone on its own.</p>
+
+            <h2 id="how">How it works, briefly</h2>
+            <ol>
+                <li>When a ban is issued, the target's connection signals are
+                    captured and stored with the sanction: address, network
+                    prefix, client locale and brand, name pattern, client
+                    settings.</li>
+                <li>On every login, a probe of the incoming connection is
+                    compared against those stored signals.</li>
+                <li>Each agreeing signal contributes evidence weighted by how
+                    rare the shared value is <em>on your server</em>: an
+                    address shared by two accounts means a lot; a locale shared
+                    by half the player base means almost nothing. Evidence
+                    decays with the age of the stored observation.</li>
+                <li>The combined evidence yields a probability. At or above
+                    the flag threshold, holders of
+                    <code>minutiae.fingerprint.alert</code> are notified.</li>
+            </ol>
+            <div class="callout note"><span class="label">Note</span>
+                <p>Alerts only, by design. The model is calibrated and
+                    explains itself, but shared households, siblings, and VPNs
+                    exist - a human decides. Automation on top of evasion
+                    scores is possible through the ALAM engine, where it is
+                    subject to its own safety posture.</p>
+            </div>
+
+            <h2 id="signals">The signals</h2>
+            <table class="items">
+                <tr><td>ip-full</td>
+                    <td>The exact address. The strongest signal, and the
+                        fastest to decay (half-life 14 days) - addresses
+                        churn.</td></tr>
+                <tr><td>ip-subnet</td>
+                    <td>The /24 or /64 prefix. Survives address churn within a
+                        provider; weaker but slower to decay.</td></tr>
+                <tr><td>ip-asn</td>
+                    <td>The provider label, when the address matches your
+                        configured network catalogue.</td></tr>
+                <tr><td>ip-rdns</td>
+                    <td>Reverse-DNS host pattern, digits normalised. Off by
+                        default (costs a lookup per fresh connection).</td></tr>
+                <tr><td>name-pattern</td>
+                    <td>The player name with digits collapsed:
+                        <code>Steve123</code> and <code>Steve777</code>
+                        match.</td></tr>
+                <tr><td>locale, client-brand, client-protocol,
+                    view-distance, skin-parts, main-hand</td>
+                    <td>Client fingerprint: individually weak, collectively
+                        meaningful.</td></tr>
+            </table>
+            <p>Signals derived from one attribute do not double-count: a full
+                address match already implies the subnet and provider, so only
+                the most specific one contributes. A subnet match <em>without</em>
+                a full-address match still counts on its own - that is exactly
+                the changed-address case the subnet signal exists for.</p>
+
+            <h2 id="tuning">Tuning</h2>
+            <pre><code>fingerprint:
+  enabled: true
+  reverse-dns: false
+  evidence:
+    prior-evasion-rate: 0.001
+    flag-threshold: 0.90</code></pre>
+            <table class="items">
+                <tr><td>flag-threshold</td>
+                    <td>The posterior probability that raises an alert. Lower
+                        it toward 0.8 if evaders slip through; raise it toward
+                        0.95 if staff report noise. Change one knob at a time
+                        and give it a few days.</td></tr>
+                <tr><td>prior-evasion-rate</td>
+                    <td>The assumed base rate of evasion among connections.
+                        The default is deliberately conservative; increase
+                        (e.g. 0.01) only if your server is under active
+                        ban-evasion pressure.</td></tr>
+                <tr><td>reverse-dns</td>
+                    <td>Adds the PTR-record host pattern as a signal. Useful
+                        against mobile-carrier address churn; costs one DNS
+                        lookup per fresh connection, bounded and off the main
+                        thread.</td></tr>
+            </table>
+            <p>The remaining <code>evidence</code>, <code>correlation</code>,
+                and <code>clustering</code> knobs are documented inline in
+                <code>config.yml</code>; the defaults are sensible and rarely
+                need touching.</p>
+
+            <h3 id="network">The network catalogue</h3>
+            <pre><code>fingerprint:
+  network:
+    entries:
+      - { cidr: "203.0.113.0/24", asn: "EXAMPLE-VPN", datacenter: true }
+      - { cidr: "198.51.100.0/24", asn: "EXAMPLE-ISP", datacenter: false }</code></pre>
+            <p>Labels address ranges with a provider name and a datacenter/VPN
+                flag. You do not need to blacklist VPNs: a VPN exit shared by
+                many accounts automatically carries near-zero evidence because
+                the model weighs values by how many distinct accounts bear
+                them. The catalogue just makes the labelling visible in the
+                panel.</p>
+
+            <h2 id="behavioural">Behavioural correlation</h2>
+            <p>Field agreement cannot tell an alt account from a sibling on
+                the same connection. Temporal behaviour helps:</p>
+            <table class="items">
+                <tr><td>Handoffs</td>
+                    <td>One account logs out, another logs in from the same
+                        address within minutes - the alternating pattern of a
+                        single operator. Raises the score.</td></tr>
+                <tr><td>Simultaneous presence</td>
+                    <td>Both accounts online at once - characteristic of two
+                        people. Lowers the score.</td></tr>
+                <tr><td>Active hours</td>
+                    <td>Similar hour-of-day patterns weakly raise it.</td></tr>
+            </table>
+            <p>Every term is capped and the total adjustment is bounded, so
+                behaviour can tip a borderline case but never override the
+                field evidence.</p>
+
+            <h2 id="inspecting">Inspecting a suspect</h2>
+            <p>In game:</p>
+            <pre><code>/me-ban fingerprint SomePlayer</code></pre>
+            <p>Shows the live session's signals and the best match with its
+                score. For the full picture, the panel's
+                <code>HKEY_FINGERPRINTS</code> hive offers three views:</p>
+            <table class="items">
+                <tr><td>ByType</td>
+                    <td>Every recorded signal value and the accounts bearing
+                        it - "who else was on this address".</td></tr>
+                <tr><td>Clusters</td>
+                    <td>Accounts grouped by shared rare signals. Rare values
+                        merge accounts outright; common ones only accumulate
+                        evidence toward a merge; near-universal ones are
+                        discarded, so a popular VPN cannot fuse your player
+                        base into one blob.</td></tr>
+                <tr><td>Suspects / Evidence</td>
+                    <td>For an online player: the signal-by-signal breakdown
+                        of their score - each signal's contribution, the
+                        rarity estimate behind it, and its age decay. This is
+                        the view to screenshot into a staff dispute.</td></tr>
+            </table>
+
+            <h2 id="feedback">Teaching the model</h2>
+            <p>Signal reliabilities are not fixed: when staff adjudicate a
+                flag as confirmed evasion or a false positive, the weights of
+                the signal types that fired update accordingly and persist.
+                A server where locale turns out to be noise will gradually
+                trust locale less. No configuration is involved; the model
+                learns from verdicts.</p>
+
+            <h2 id="privacy">Data and privacy</h2>
+            <ul>
+                <li>Signals are captured only when a connection-blocking
+                    sanction is issued - not for the general population.</li>
+                <li>Everything stays in your local SQLite file; nothing is
+                    sent anywhere.</li>
+                <li>Addresses are visible to panel users and in signal
+                    listings; scope your read tokens accordingly.</li>
+            </ul>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

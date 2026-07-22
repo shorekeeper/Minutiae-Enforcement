@@ -1,0 +1,238 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/ctor/Annotation.Probation">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Annotation::Probation - ALAM reference</title>
+    <meta name="description" content="Reference for opening a probation window from an ALAM sanction and aggravating later precedent-based duration selection.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Annotation', href: '../sum/Annotation.html', group: 'Container' },
+            { label: 'Duration', href: '../type/Duration.html', group: 'Depends on' },
+            { label: 'Escalation::Steps', href: 'Escalation.Steps.html' },
+            { label: 'precedent', href: '../fn/precedent.html' },
+            { label: 'Annotation::Decay', href: 'Annotation.Decay.html', group: 'Related policy' },
+            { label: 'Annotation::Tariff', href: 'Annotation.Tariff.html' },
+            { label: 'Annotation::WarnFirst', href: 'Annotation.WarnFirst.html' },
+            { label: 'Sanction', href: '../rec/Sanction.html', group: 'Consumed by' },
+            { label: 'Layout', href: '../rec/Layout.html' },
+            { label: 'Layouts and escalation', href: '../../layouts.html#probation', group: 'Operational docs' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Annotation::Probation</h1>
+                <span class="entity-badge ctor">constructor</span>
+            </div>
+            <p class="entity-def">Opens a finite window on the persisted sanction record during which later precedent under the same rule or joinder chain is treated as aggravated.</p>
+
+            <table class="entity-meta">
+                <tr><th>Container</th><td><code>Annotation</code></td></tr>
+                <tr><th>Category</th><td>Precedent lifecycle constructor</td></tr>
+                <tr><th>Payload</th><td>One finite <code>Duration</code></td></tr>
+                <tr><th>Layout scope</th><td>Permitted</td></tr>
+                <tr><th>Command form</th><td><code>@probation(window)</code></td></tr>
+                <tr><th>Persisted field</th><td><code>bans.probation_until</code></td></tr>
+                <tr><th>Runtime state</th><td>No in-memory timer; active status is derived by precedent queries</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Annotation::Probation(window)                              (1)
+
+Annotation::Probation {
+    .window = window,
+}                                                           (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Positional construction.</span></li>
+                <li><span class="decl-no">(2)</span><span>Named-field construction.</span></li>
+            </ul>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                <tr>
+                    <td><code>window</code></td>
+                    <td><code>Duration</code></td>
+                    <td>Yes</td>
+                    <td>Interval from the effective issue time during which later precedent is marked as being in probation.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The constructor requires exactly one primitive <code>Duration</code>.</li>
+                <li>The system actor must hold <code>minutiae.annotation.probation</code>.</li>
+                <li>A zero window is type-correct but is not active after ordinary current-time comparison.</li>
+                <li>The constructor does not require an escalation ladder, but without escalation policy its aggravating effect may not change the selected duration.</li>
+                <li>The window is stored on the sanction record that carries the annotation. It is not a global account flag.</li>
+                <li>Probation applied during sanction issuance is distinct from probation attached to a pardon or time-served lift.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>When a live sanction is persisted, the executor computes:</p>
+            <pre class="synopsis"><code>probation_until =
+    issued_at + window</code></pre>
+            <p><code>issued_at</code> is the effective issue timestamp after any backdate offset. A backdated sanction therefore opens a probation window relative to the backdated legal timeline, not relative to database insertion time.</p>
+
+            <p>A future precedent query reports active probation when at least one eligible record satisfies:</p>
+            <pre class="synopsis"><code>probation_until &gt; now</code></pre>
+
+            <p>The ordinary subject-and-rule query also requires that the record:</p>
+            <ul>
+                <li>belongs to the same subject;</li>
+                <li>cites the same primary rule;</li>
+                <li>has not been vacated;</li>
+                <li>has not decayed out of precedent.</li>
+            </ul>
+
+            <h3 id="aggravation">Aggravation policies</h3>
+            <p>When precedent reports <code>in_probation = true</code>, runtime configuration selects one of two policies.</p>
+
+            <table>
+                <tr><th>Mode</th><th>Calculation</th><th>Effect</th></tr>
+                <tr>
+                    <td>Step</td>
+                    <td><code>index = min(priorSanctions + 1, ladder.length - 1)</code></td>
+                    <td>Advances one additional escalation rung.</td>
+                </tr>
+                <tr>
+                    <td>Multiplier</td>
+                    <td><code>duration = round(duration × configuredMultiplier)</code></td>
+                    <td>Scales the selected finite duration.</td>
+                </tr>
+            </table>
+
+            <p>A permanent selected duration is not multiplied. It remains permanent.</p>
+
+            <h3 id="current-sanction">Current sanction distinction</h3>
+            <p>The executor loads precedent before it persists the new sanction. Consequently, a probation window opened by the current sanction cannot aggravate that same sanction. It affects later precedent queries only.</p>
+
+            <div class="normative">
+                <span class="normative-label">Postcondition</span>
+                <p>After successful persistence, the sanction record carries one absolute probation deadline. No background task is scheduled. Later queries determine whether the deadline is still active.</p>
+            </div>
+
+            <h3 id="warnings">Warning downgrade</h3>
+            <p>The executor calculates <code>probation_until</code> independently of the warn-first downgrade. If the current offense is persisted as <code>Measure::WARN</code>, the warning row may still carry the probation deadline and may aggravate a later offense while that deadline remains active.</p>
+
+            <h3 id="decay">Interaction with decay</h3>
+            <p>The ordinary precedent query applies decay filtering to the same rows used to detect probation. If the record decays before its probation deadline, it no longer contributes the active probation flag to that query.</p>
+
+            <h3 id="joinder">Joinder-chain precedent</h3>
+            <p>When a sanction is woven under a parent case, the executor may query the whole joinder chain. In that path, any eligible chain member with an unexpired probation deadline can mark the chain precedent as being in probation.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>Materialization uses the ordinary command annotation bridge:</p>
+                <pre><code class="language-java">case "Probation" -&gt;
+    out.add(directive("probation", dur(a)));</code></pre>
+
+                <p>The executor calculates the absolute deadline:</p>
+                <pre><code class="language-java">final long probationUntil =
+    r.probationFor() != null
+        ? issuedAt + r.probationFor().millis()
+        : 0L;</code></pre>
+
+                <p>Ordinary precedent derives the active flag with an aggregate:</p>
+                <pre><code class="language-sql">MAX(
+    CASE
+        WHEN probation_until &gt; ?
+        THEN 1
+        ELSE 0
+    END
+) AS probation</code></pre>
+
+                <p>The result is projected to one Java value:</p>
+                <pre><code class="language-java">new Precedent(
+    rs.getInt(1),
+    rs.getInt(2),
+    rs.getInt(3) != 0
+)</code></pre>
+
+                <ul>
+                    <li>The query returns only one boolean probation state, not the record that supplied it.</li>
+                    <li>Step mode and multiplier mode are configured by <code>EscalationConfig</code>, not by the ALAM constructor.</li>
+                    <li>Multiplier arithmetic uses <code>Math.round(double)</code> and does not use exact integer multiplication.</li>
+                    <li>The sanction decision trace stores the <code>inProbation</code> flag that was consulted for the current decision.</li>
+                    <li>No maintenance service clears expired probation deadlines; comparison with <code>now</code> makes them inactive lazily.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Deadline calculation</dt>
+                    <dd>O(1).</dd>
+                    <dt>Active-state check</dt>
+                    <dd>Part of the asynchronous indexed precedent aggregate.</dd>
+                    <dt>Aggravation</dt>
+                    <dd>O(1) after precedent and ladder are available.</dd>
+                    <dt>Storage</dt>
+                    <dd>One epoch-millisecond field on the sanction record.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">.escalation = Escalation::Steps({
+    Duration::Fixed(1d),
+    Duration::Fixed(7d),
+    Duration::Fixed(30d),
+}),
+.annotations = {
+    Annotation::Escalate,
+    Annotation::Probation(14d),
+},</code></pre>
+            <p>The current sanction opens a 14-day probation window. A later eligible offense inside the window receives the configured extra-step or multiplier aggravation.</p>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The probation window has a type other than <code>Duration</code>.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>The named form contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>The named form omits <code>window</code>.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The positional form has the wrong arity.</td></tr>
+                <tr><td><code>E035</code></td><td>Elaboration</td><td>The constructor is referenced without its required window.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Escalation::Steps</code></td><td>Provides the duration ladder advanced by step-mode probation.</td></tr>
+                <tr><td><code>Annotation::Decay</code></td><td>Can remove the probation-bearing record from precedent before the probation deadline.</td></tr>
+                <tr><td><code>Annotation::Tariff</code></td><td>Applies a floor after probation adjustment.</td></tr>
+                <tr><td><code>Annotation::WarnFirst</code></td><td>Runs before the effective measure is applied and may persist the offense as a warning.</td></tr>
+                <tr><td><code>precedent</code></td><td>Exposes the non-warning count to ALAM guards but not the probation boolean directly.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

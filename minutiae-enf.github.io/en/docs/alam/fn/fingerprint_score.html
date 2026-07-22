@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/fn/fingerprint_score">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>fingerprint_score - ALAM reference</title>
+    <meta name="description" content="Reference for the non-blocking ALAM fingerprint score query, cache lifecycle, neutral miss result, and online-player dependency.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Account', href: '../type/Account.html', group: 'Parameters' },
+            { label: 'Real', href: '../type/Real.html', group: 'Returns' },
+            { label: 'Evasion', href: '../event/Evasion.html', group: 'Related event' },
+            { label: 'is_online', href: 'is_online.html', group: 'Sibling queries' },
+            { label: 'precedent', href: 'precedent.html' },
+            { label: 'guard', href: '../keyword/rule.html#guard', group: 'Used by' },
+            { label: 'Effects', href: '../guide/effects.html', group: 'See also' },
+            { label: 'Evasion detection', href: '../../fingerprint.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>fingerprint_score</h1>
+                <span class="entity-badge fn">function</span>
+            </div>
+            <p class="entity-def">Returns the currently cached best-match probability produced by the fingerprint evasion model for one online account.</p>
+
+            <table class="entity-meta">
+                <tr><th>Signature</th><td><code>(Account) -&gt; Real</code></td></tr>
+                <tr><th>Effect</th><td><span class="eff query">query</span></td></tr>
+                <tr><th>Conventional range</th><td>0 through 1</td></tr>
+                <tr><th>Cache lifetime</th><td>30 seconds</td></tr>
+                <tr><th>Miss result</th><td><code>0.0</code></td></tr>
+                <tr><th>Offline result</th><td><code>0.0</code>, cached for the TTL</td></tr>
+                <tr><th>Blocking I/O</th><td>None on the guard evaluation path</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>fingerprint_score(subject)</code></pre>
+            <pre class="gram"><code>fingerprint-score-call =
+    "fingerprint_score" "("
+        account-expression
+    ")" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr>
+                    <td><code>subject</code></td>
+                    <td><code>Account</code></td>
+                    <td>Account whose currently available connection probe is scored against stored signals.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The call requires exactly one <code>Account</code> argument.</li>
+                <li>The call is valid only under a <code>query</code> effect allowance.</li>
+                <li>The live fill path requires the subject to resolve to an online Paper player.</li>
+                <li>An unknown account returns <code>0.0</code>.</li>
+                <li>The function does not block while a score is being computed.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The function reads a per-account cache. Its result is the probability of the best matching sanctioned account found by the current fingerprint model, or <code>0.0</code> when no match is available.</p>
+
+            <h3 id="cache">Cache behavior</h3>
+            <table>
+                <tr><th>Cache state</th><th>Immediate result</th><th>Background action</th></tr>
+                <tr><td>Fresh</td><td>Cached score</td><td>None</td></tr>
+                <tr><td>Missing</td><td><code>0.0</code></td><td>Schedule scoring when the player is online</td></tr>
+                <tr><td>Expired</td><td>Stale cached score</td><td>Schedule refresh</td></tr>
+                <tr><td>Offline during fill</td><td>Current neutral or stale result</td><td>Publish <code>0.0</code> for 30 seconds</td></tr>
+                <tr><td>Scoring failure</td><td>Current neutral or stale result</td><td>Publish <code>0.0</code> for 30 seconds</td></tr>
+            </table>
+
+            <div class="callout warn">
+                <span class="label">Guard design</span>
+                <p>The first evaluation for an uncached subject normally observes <code>0.0</code>. Do not assume that a high stored match is synchronously available on the event that initiated the cache fill.</p>
+            </div>
+
+            <h3 id="score-source">Score source</h3>
+            <p>The fill path calls the fingerprint service for the currently online player. It constructs a probe from the player's current address and name, queries matching signals of active connection-blocking sanctions, and selects the best candidate under the evidence model.</p>
+            <p>The resulting value is a posterior match probability, not the legacy sum of configured capture weights. It can include the bounded behavioral session-correlation adjustment.</p>
+
+            <h3 id="event-distinction">Distinction from Evasion.score</h3>
+            <p><code>Evasion.score</code> is a snapshot supplied by the event producer. <code>fingerprint_score</code> reads a mutable cache and may return a newer, older, stale, or neutral value.</p>
+
+            <h3 id="disabled-subsystem">Disabled fingerprint subsystem</h3>
+            <p>The live guard environment still calls the injected fingerprint service. When fingerprint detection is disabled, ordinary capture and pre-login assessment paths are disabled, but this function's exact result depends on the service and stored data available to its scoring call. Definitions should treat <code>0.0</code> as unavailable or no match.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff query">query</span> The function reads live online-player state and a mutable asynchronous score cache.</p>
+            <p>It may appear in rule and sequence step guards. It cannot appear in verdicts, transforms, constants, matrix cells, trigger construction, or template constraints.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The signature is registered as:</p>
+                <pre><code class="language-java">"fingerprint_score", new Func(
+    List.of(ACCOUNT),
+    REAL,
+    Effect.QUERY
+)</code></pre>
+
+                <p>The interpreter delegates directly:</p>
+                <pre><code class="language-java">case "fingerprint_score" -&gt;
+    new Value.RealV(
+        f.env.fingerprintScore(
+            accountOf(args.get(0))
+        )
+    );</code></pre>
+
+                <p>The live environment performs a non-blocking lookup:</p>
+                <pre><code class="language-java">final Entry entry =
+    scoreCache.get(subject);
+
+if (entry == null
+        || entry.expiresAt() &lt;= now) {
+    fillScore(subject, now);
+}
+
+return entry == null
+    ? 0.0d
+    : entry.value();</code></pre>
+
+                <p>An offline subject is cached as neutral:</p>
+                <pre><code class="language-java">final Player player =
+    plugin.getServer().getPlayer(subject);
+
+if (player == null) {
+    scoreCache.put(
+        subject,
+        new Entry(0.0d, now + TTL_MS)
+    );
+    scorePending.remove(subject);
+    return;
+}</code></pre>
+
+                <p>The asynchronous completion publishes the probability:</p>
+                <pre><code class="language-java">fingerprint.scorePlayer(player)
+    .whenComplete((match, error) -&gt; {
+        final double score =
+            error != null || match == null
+                ? 0.0d
+                : match.score();
+
+        scoreCache.put(
+            subject,
+            new Entry(score, now + TTL_MS)
+        );
+
+        scorePending.remove(subject);
+    });</code></pre>
+
+                <ul>
+                    <li>The cache key is the subject UUID.</li>
+                    <li>A concurrent pending set permits one fill per subject at a time.</li>
+                    <li>The TTL begins at fill request time, not completion time.</li>
+                    <li><code>scorePlayer</code> disables reverse-DNS derivation for this diagnostic scoring path.</li>
+                    <li>The cache is not immediately invalidated when fingerprint evidence changes.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Cache read</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Pending check</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Fill</dt>
+                    <dd>One asynchronous matching-signal query plus evidence scoring over returned candidates.</dd>
+                    <dt>Cache storage</dt>
+                    <dd>O(A) for A observed account UUIDs.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Login&gt; probable_evasion {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            fingerprint_score(event.subject) &gt;= 0.90;
+    }
+    =&gt; verdict =
+        evasion_verdict&lt;Measure::SUSPENSION, 30d&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The argument has a type other than <code>Account</code>.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>The query is called in a pure position.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The call has other than one argument.</td></tr>
+            </table>
+            <p>A cache miss, offline player, absent match, or asynchronous scoring failure is not a compiler diagnostic and produces the documented neutral runtime result.</p>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Evasion</code></td><td>Event carrying a producer-supplied score snapshot.</td></tr>
+                <tr><td><code>is_online</code></td><td>May be used to explicitly gate score-dependent logic on current presence.</td></tr>
+                <tr><td><code>Account</code></td><td>Nominal subject identity accepted by the query.</td></tr>
+                <tr><td>Evasion detection</td><td>Evidence model, signals, thresholds, and staff alert behavior.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

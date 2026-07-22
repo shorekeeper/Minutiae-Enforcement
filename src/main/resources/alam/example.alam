@@ -1,0 +1,42 @@
+
+template<Measure M, Duration D>
+where {
+    D <= 30d;
+}
+verdict ladder = (e) -> Sanction {
+    .target      = e.subject,
+    .cite        = { P.2.1 },
+    .measure     = M,
+    .duration    = Duration::Fixed(D),
+    .escalation  = Escalation::None,
+    .annotations = { Annotation::Notify("staff") },
+    .attribution = Attribution::System,
+    .dry_run     = DryRun::InheritSafety,
+};
+
+template<> verdict ladder<Measure::CUSTODY, _> = (e) -> Sanction {
+    .target      = e.subject,
+    .cite        = { P.2.1 },
+    .measure     = Measure::CUSTODY,
+    .duration    = Duration::Permanent,
+    .escalation  = Escalation::None,
+    .annotations = {},
+    .attribution = Attribution::System,
+    .dry_run     = DryRun::InheritSafety,
+};
+
+rule<Chat> mute_flood {
+    condition {
+        trigger = Trigger::Repeated {
+            .count    = 5,
+            .within   = 30s,
+            .group_by = GroupBy::Subject,
+        };
+        guard = (e) -> e.length > 120 && precedent(e.subject, P.2.1) >= 1;
+    }
+    => verdict = ladder<Measure::MUTE, 3h>;
+}
+
+automaton chat_watch {
+    use mute_flood;
+}

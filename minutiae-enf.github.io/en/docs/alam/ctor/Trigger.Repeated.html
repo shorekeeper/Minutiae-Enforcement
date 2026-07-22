@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/ctor/Trigger.Repeated">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trigger::Repeated - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM Trigger::Repeated constructor and its partitioned recurrence window.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Trigger', href: '../sum/Trigger.html', group: 'Container' },
+            { label: 'Trigger::Atomic', href: 'Trigger.Atomic.html', group: 'Trigger forms' },
+            { label: 'Trigger::Sequence', href: 'Trigger.Sequence.html' },
+            { label: 'GroupBy', href: '../sum/GroupBy.html', group: 'Depends on' },
+            { label: 'Duration', href: '../type/Duration.html' },
+            { label: 'Int', href: '../type/Int.html' },
+            { label: 'rule.trigger', href: '../keyword/rule.html#trigger', group: 'Consumed by' },
+            { label: 'Runtime model', href: '../guide/runtime.html', group: 'See also' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Trigger::Repeated</h1>
+                <span class="entity-badge ctor">constructor</span>
+            </div>
+            <p class="entity-def">Fires after a guard-admitted event occurs a specified number of times within a trailing span, independently for each partition.</p>
+
+            <table class="entity-meta">
+                <tr><th>Container</th><td><code>Trigger</code></td></tr>
+                <tr><th>Category</th><td>Stateful trigger constructor</td></tr>
+                <tr><th>Observed events</th><td>Exactly one</td></tr>
+                <tr><th>Compile-time effect</th><td><span class="eff pure">pure</span></td></tr>
+                <tr><th>Runtime state</th><td>One timestamp ring per active partition</td></tr>
+                <tr><th>Reset rule</th><td>Clear the partition ring after a successful recurrence match</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Trigger::Repeated(count, within, group_by)                    (1)
+
+Trigger::Repeated {
+    .count = count,
+    .within = within,
+    .group_by = group_by,
+}                                                               (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Positional construction.</span></li>
+                <li><span class="decl-no">(2)</span><span>Named-field construction.</span></li>
+            </ul>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                <tr>
+                    <td><code>count</code></td>
+                    <td><code>Int</code></td>
+                    <td>Yes</td>
+                    <td>Number of admitted occurrences required to fire.</td>
+                </tr>
+                <tr>
+                    <td><code>within</code></td>
+                    <td><code>Duration</code></td>
+                    <td>Yes</td>
+                    <td>Trailing finite span containing all required occurrences.</td>
+                </tr>
+                <tr>
+                    <td><code>group_by</code></td>
+                    <td><code>GroupBy</code></td>
+                    <td>Yes</td>
+                    <td>Selector producing the independent state partition.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li><code>count</code> is outside the inclusive range 1 through 10000.</li>
+                    <li><code>within</code> is zero, negative, or permanent.</li>
+                    <li>The containing <code>rule</code> declares other than exactly one event.</li>
+                    <li>A positional construction supplies other than three arguments.</li>
+                    <li>A named construction omits a field, supplies an unknown field, or supplies a field more than once.</li>
+                    <li>A field value has a type different from its declared type.</li>
+                </ol>
+            </div>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>For each incoming candidate event:</p>
+            <ol>
+                <li>Adapt the event facts to the rule's declared event record.</li>
+                <li>Evaluate the rule guard against that record.</li>
+                <li>If the guard is false or fails, do not modify the recurrence state.</li>
+                <li>Derive the partition from <code>group_by</code>.</li>
+                <li>Append the current epoch-millisecond timestamp to that partition's ring.</li>
+                <li>Count retained timestamps satisfying the boundary rule.</li>
+                <li>If at least <code>count</code> timestamps are retained, clear the ring and pass the trigger.</li>
+                <li>Otherwise, return the runtime decision <code>WINDOW_WAIT</code>.</li>
+            </ol>
+
+            <div class="normative">
+                <span class="normative-label">Boundary rule</span>
+                <p>An occurrence is in the window if and only if:</p>
+                <pre class="sig"><code>timestamp &gt; now - within</code></pre>
+                <p>An occurrence exactly at the lower boundary is excluded.</p>
+            </div>
+
+            <div class="normative">
+                <span class="normative-label">Postcondition on match</span>
+                <p>The matched partition ring is empty. A subsequent firing must accrue another complete set of <code>count</code> admitted occurrences.</p>
+            </div>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <ul>
+                    <li><code>Lowering</code> produces <code>TriggerPlan.Repeated(int, long, Part)</code>.</li>
+                    <li>The state key contains automaton name, rule name, and rendered partition value.</li>
+                    <li><code>WindowTracker</code> stores one fixed-capacity <code>long[]</code> ring per key.</li>
+                    <li>When full, recording overwrites the oldest timestamp.</li>
+                    <li>The partition map is a <code>ConcurrentHashMap</code>.</li>
+                    <li>Every 1024 records, an amortized sweep removes empty rings and rings idle for more than one hour.</li>
+                    <li>A successful recurrence still must pass the owning automaton's per-minute throttle.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Partition lookup</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Record</dt>
+                    <dd>O(count), because retained timestamps are scanned after insertion.</dd>
+                    <dt>Storage</dt>
+                    <dd>O(count) per active partition.</dd>
+                    <dt>Sweep</dt>
+                    <dd>O(P) every 1024 records, where P is the number of tracked partitions.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Chat&gt; mute_flood {
+    condition {
+        trigger = Trigger::Repeated {
+            .count = 5,
+            .within = 30s,
+            .group_by = GroupBy::Subject,
+        };
+        guard = (event) -&gt; event.length &gt; 120;
+    }
+    =&gt; verdict = flood_verdict&lt;Measure::MUTE, 3h&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>A field value has the wrong type.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>A named construction contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>A mandatory field is absent.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The positional form has the wrong arity.</td></tr>
+                <tr><td><code>V001</code></td><td>Evaluation</td><td>The count, span, or containing rule shape is invalid.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Trigger::Atomic</code></td><td>Stateless admission of each event occurrence.</td></tr>
+                <tr><td><code>Trigger::Sequence</code></td><td>Ordered event matching with re-anchoring and capture.</td></tr>
+                <tr><td><code>GroupBy</code></td><td>Partition selection for stateful triggers.</td></tr>
+                <tr><td><code>rule</code></td><td>Declaration containing the trigger and guard.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

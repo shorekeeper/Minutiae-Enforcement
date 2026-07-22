@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/fn/precedent">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>precedent - ALAM reference</title>
+    <meta name="description" content="Reference for the ALAM precedent query, its non-blocking cache, storage semantics, neutral miss behavior, and effect restrictions.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Account', href: '../type/Account.html', group: 'Parameters' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'Int', href: '../type/Int.html', group: 'Returns' },
+            { label: 'guard', href: '../keyword/rule.html#guard', group: 'Used by' },
+            { label: 'template', href: '../keyword/template.html' },
+            { label: 'Annotation::WarnFirst', href: '../ctor/Annotation.WarnFirst.html', group: 'Related policy' },
+            { label: 'Annotation::Decay', href: '../ctor/Annotation.Decay.html' },
+            { label: 'Escalation::Steps', href: '../ctor/Escalation.Steps.html' },
+            { label: 'Effects', href: '../guide/effects.html', group: 'See also' },
+            { label: 'E007', href: '../diag/E007.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>precedent</h1>
+                <span class="entity-badge fn">function</span>
+            </div>
+            <p class="entity-def">Returns the cached count of prior non-warning sanctions for one account under one primary rule.</p>
+
+            <table class="entity-meta">
+                <tr><th>Signature</th><td><code>(Account, Rule) -&gt; Int</code></td></tr>
+                <tr><th>Effect</th><td><span class="eff query">query</span></td></tr>
+                <tr><th>Live source</th><td>Bounded in-memory cache backed by asynchronous storage queries</td></tr>
+                <tr><th>Cache key</th><td>Account UUID and rule identifier</td></tr>
+                <tr><th>Cache lifetime</th><td>30 seconds</td></tr>
+                <tr><th>Miss result</th><td><code>0</code></td></tr>
+                <tr><th>Blocking I/O</th><td>None on the guard evaluation path</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>precedent(subject, rule)</code></pre>
+            <pre class="gram"><code>precedent-call =
+    "precedent" "("
+        account-expression ","
+        rule-identifier-expression
+    ")" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Parameter</th><th>Type</th><th>Description</th></tr>
+                <tr>
+                    <td><code>subject</code></td>
+                    <td><code>Account</code></td>
+                    <td>Account whose rule-scoped prior record is queried.</td>
+                </tr>
+                <tr>
+                    <td><code>rule</code></td>
+                    <td><code>Rule</code></td>
+                    <td>Primary external rule identifier defining the precedent scope.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The call requires exactly two arguments.</li>
+                <li>The first argument must have nominal type <code>Account</code>.</li>
+                <li>The second argument must have primitive type <code>Rule</code>, not structural <code>Rule&lt;Events...&gt;</code>.</li>
+                <li>The call is permitted only under a <code>query</code> effect allowance.</li>
+                <li>Every rule identifier literal reachable from a published guard must exist in the external rule registry.</li>
+                <li>An unknown account representation or null rule produces the neutral result <code>0</code>.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The returned value is the number of eligible prior sanction rows whose effective measure is not <code>Measure::WARN</code>. It is not the count of all sanctions and does not include the separate formal-warning count.</p>
+
+            <p>A row contributes only when:</p>
+            <ul>
+                <li>its subject UUID equals <code>subject</code>;</li>
+                <li>its primary rule equals <code>rule</code>;</li>
+                <li>it has not been vacated, or it was lifted under a kind that retains precedent;</li>
+                <li>its decay deadline is zero or remains in the future.</li>
+            </ul>
+
+            <div class="normative">
+                <span class="normative-label">Returned information</span>
+                <p>The function exposes <code>priorSanctions</code> only. It does not expose prior warnings, active probation, lift kind, sanction activity, expiry, or joinder-chain precedent.</p>
+            </div>
+
+            <h3 id="cache">Cache behavior</h3>
+            <p>A fresh cache entry returns its stored count immediately. A missing entry returns <code>0</code> and schedules one asynchronous storage query. Repeated misses for the same key while that query is pending do not schedule duplicate queries.</p>
+            <p>An expired entry returns its stale value immediately and schedules a refresh. The stale value remains available until the asynchronous query publishes a replacement.</p>
+
+            <table>
+                <tr><th>Cache state</th><th>Immediate return</th><th>Background action</th></tr>
+                <tr><td>Fresh</td><td>Cached count</td><td>None</td></tr>
+                <tr><td>Missing</td><td><code>0</code></td><td>Schedule fill</td></tr>
+                <tr><td>Expired</td><td>Stale cached count</td><td>Schedule refresh</td></tr>
+                <tr><td>Query failure</td><td>Current cached or neutral value</td><td>Remove pending marker; no replacement published</td></tr>
+            </table>
+
+            <div class="callout warn">
+                <span class="label">First-observation behavior</span>
+                <p>A guard may evaluate false on the first event for an uncached account-rule pair even when storage contains precedent. A later event can observe the asynchronously filled value.</p>
+            </div>
+
+            <h3 id="scope">Rule scope and joinder</h3>
+            <p>The built-in function uses ordinary subject-and-rule precedent. It does not call the storage operation that aggregates a woven joinder chain. Automatic sanction execution may later use chain precedent when the materialized command contains a weave parent, but this function does not expose that calculation to guards.</p>
+
+            <h3 id="activity">Activity and expiry</h3>
+            <p>The precedent query does not require a sanction to remain active or unexpired. A completed or expired sanction may continue to count until it is vacated or decays out of precedent.</p>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff query">query</span> The function reads mutable enforcement state through <code>GuardEnvironment</code>.</p>
+            <p>It may be called in rule guards and sequence step guards. Calling it in a constant initializer, matrix cell, transform, trigger expression, template constraint, or verdict produces <code>E007</code>.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The built-in signature is registered as:</p>
+                <pre><code class="language-java">"precedent", new Func(
+    List.of(ACCOUNT, RULE),
+    INT,
+    Effect.QUERY
+)</code></pre>
+
+                <p>The interpreter decodes the account and delegates to the environment:</p>
+                <pre><code class="language-java">case "precedent" -&gt; {
+    final UUID subject =
+        accountOf(args.get(0));
+
+    final String rule =
+        ((Value.RuleIdV) args.get(1)).id();
+
+    yield new Value.IntV(
+        f.env.precedent(subject, rule)
+    );
+}</code></pre>
+
+                <p>The live environment performs non-blocking cache access:</p>
+                <pre><code class="language-java">final Entry entry =
+    precedentCache.get(key);
+
+if (entry == null
+        || entry.expiresAt() &lt;= now) {
+    fillPrecedent(
+        key,
+        subject,
+        rule,
+        now
+    );
+}
+
+return entry == null
+    ? 0L
+    : (long) entry.value();</code></pre>
+
+                <p>One pending marker suppresses duplicate fills:</p>
+                <pre><code class="language-java">if (!precedentPending.add(key)) {
+    return;
+}
+
+storage.precedent(
+    subject.toString(),
+    rule,
+    now
+).whenComplete((value, error) -&gt; {
+    if (error == null &amp;&amp; value != null) {
+        precedentCache.put(
+            key,
+            new Entry(
+                value.priorSanctions(),
+                now + TTL_MS
+            )
+        );
+    }
+
+    precedentPending.remove(key);
+});</code></pre>
+
+                <p>The storage aggregate separates non-warning sanctions from warnings:</p>
+                <pre><code class="language-sql">SELECT
+    SUM(
+        CASE
+            WHEN measure = 'WARN' THEN 0
+            ELSE 1
+        END
+    ) AS reals,
+    SUM(
+        CASE
+            WHEN measure = 'WARN' THEN 1
+            ELSE 0
+        END
+    ) AS warns
+FROM bans
+WHERE uuid = ?
+  AND rule = ?
+  AND (lifted_at = 0 OR lift_kind &lt;&gt; 0)
+  AND (decay_at = 0 OR decay_at &gt; ?)</code></pre>
+
+                <ul>
+                    <li>The cache stores the integer count in a <code>double</code>-valued entry shared with score caching, then casts it back to <code>long</code>.</li>
+                    <li>The expiry timestamp is based on the time at which the fill was requested.</li>
+                    <li>Cache entries are not explicitly invalidated immediately after sanction issuance or lifting.</li>
+                    <li>The 30-second TTL bounds eventual staleness under ordinary operation.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Cache read</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Pending check</dt>
+                    <dd>Expected O(1).</dd>
+                    <dt>Storage fill</dt>
+                    <dd>One asynchronous indexed aggregate query on a miss or refresh.</dd>
+                    <dt>Cache storage</dt>
+                    <dd>O(K) for K observed account-rule pairs.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Chat&gt; repeat_offender {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt;
+            precedent(event.subject, P.2.1) &gt;= 2;
+    }
+    =&gt; verdict =
+        repeated_flood_verdict&lt;Measure::MUTE, 1d&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>An argument has an incompatible type.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>The query is called from a pure position.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The call has other than two arguments.</td></tr>
+                <tr><td><code>R001</code></td><td>Verification</td><td>A reachable rule identifier literal is absent from the external rule registry.</td></tr>
+            </table>
+            <p>A cache miss or storage fill failure is not a compiler diagnostic. It produces the documented neutral or stale runtime result.</p>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Account</code></td><td>Type of the queried subject identity.</td></tr>
+                <tr><td><code>Rule</code></td><td>Primitive external rule identifier defining the query scope.</td></tr>
+                <tr><td><code>Annotation::Decay</code></td><td>Removes old rows from future precedent queries.</td></tr>
+                <tr><td><code>Annotation::WarnFirst</code></td><td>Uses the separate warning count not exposed by this function.</td></tr>
+                <tr><td><code>Escalation::Steps</code></td><td>Uses the non-warning count during sanction execution.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

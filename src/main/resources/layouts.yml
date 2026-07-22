@@ -1,0 +1,49 @@
+# ==========================================================================
+# Minutiae Enforcement - layout registry
+# --------------------------------------------------------------------------
+# 'measure' selects the enforcement mechanism and is mandatory for any
+# invocable layout. Instantaneous measures (WARN, CENSURE, KICK) must not
+# declare a duration; temporal measures (MUTE, QUARANTINE, SUSPENSION) require
+# one; CUSTODY is permanent and ignores any declared duration.
+# ==========================================================================
+
+layouts:
+
+  _base_cheat:
+    rule: "P.5.1"
+    annotations:
+      - "@evidence(required)"
+      - "@ip-lock"
+
+  griefing:
+    rule: "P.3.2"
+    measure: SUSPENSION
+    reason: "Griefing of player-owned structures"
+    duration: 7d
+    escalation: [ "7d", "30d", "permanent" ]
+    annotations:
+      - "@evidence(required)"
+      - "@escalate"
+      - "@notify(staff)"
+
+  cheating:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "Use of unauthorised client modifications"
+    annotations:
+      - "@ip-lock"
+
+  killaura:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "KillAura"
+    annotations:
+      - "@shadow"
+
+  toxic:
+    rule: "P.2.4"
+    measure: MUTE
+    reason: "Toxic behaviour toward players"
+    duration: 3h
+    annotations:
+      - "@warn-first(2)"

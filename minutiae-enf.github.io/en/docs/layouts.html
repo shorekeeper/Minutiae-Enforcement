@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/layouts">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Layouts and escalation - Minutiae Enforcement</title>
+    <meta name="description" content="Reusable sanction templates: inheritance, escalation ladders, precedent, decay, and joined cases.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Layouts and escalation</h1>
+            <p class="lede">A layout encodes your punishment policy once:
+                moderators type <code>::griefing</code>, and the rule, measure,
+                duration, ladder, and default annotations all come from
+                configuration instead of memory.</p>
+
+            <h2 id="anatomy">Anatomy of a layout</h2>
+            <pre><code>layouts:
+  griefing:
+    rule: "P.3.2"
+    measure: SUSPENSION
+    reason: "Griefing of player-owned structures"
+    duration: 7d
+    escalation: [ "7d", "30d", "permanent" ]
+    annotations:
+      - "@evidence(required)"
+      - "@escalate"
+      - "@notify(staff)"</code></pre>
+            <table class="items">
+                <tr><td>rule</td>
+                    <td>The cited rule identifier. Mandatory for any invocable
+                        layout; a layout naming a rule absent from
+                        <code>rules.yml</code> is disabled at load with a
+                        logged error, never silently.</td></tr>
+                <tr><td>measure</td>
+                    <td>The enforcement mechanism. Mandatory; see
+                        <a href="measures.html">Measures</a> for the temporal
+                        rules each measure imposes.</td></tr>
+                <tr><td>reason</td>
+                    <td>Display reason. When omitted, the rule's description
+                        from <code>rules.yml</code> is used.</td></tr>
+                <tr><td>duration</td>
+                    <td>Base duration. Required for temporal measures (MUTE,
+                        QUARANTINE, SUSPENSION); forbidden for instantaneous
+                        ones (WARN, CENSURE, KICK); ignored by CUSTODY, which
+                        is permanent by definition.</td></tr>
+                <tr><td>escalation</td>
+                    <td>The ladder consulted when <code>@escalate</code> is
+                        present. Covered below.</td></tr>
+                <tr><td>annotations</td>
+                    <td>Default annotations, in the same grammar as commands.
+                        Only config-scoped annotations are allowed here;
+                        inline-only directives are rejected at load.</td></tr>
+            </table>
+
+            <div class="callout note"><span class="label">Note</span>
+                <p>Layout annotations are permission-checked against the
+                    <em>issuing</em> moderator, not against the configuration.
+                    A layout carrying <code>@shadow</code> is unusable by staff
+                    whose group lacks
+                    <code>minutiae.annotation.shadow</code> - the command is
+                    rejected, not silently stripped.</p>
+            </div>
+
+            <h2 id="inheritance">Inheritance</h2>
+            <p>A key starting with an underscore is private: it never appears
+                in commands or tab completion and exists only as a base. A
+                layout names its parent with <code>extends</code>:</p>
+            <pre><code>layouts:
+  _base_cheat:
+    rule: "P.5.1"
+    annotations:
+      - "@evidence(required)"
+      - "@ip-lock"
+
+  cheating:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "Use of unauthorised client modifications"
+
+  killaura:
+    extends: _base_cheat
+    measure: CUSTODY
+    reason: "KillAura"
+    annotations:
+      - "@shadow"</code></pre>
+            <p>Merge rules are simple and worth knowing exactly:</p>
+            <table class="items">
+                <tr><td>scalars</td>
+                    <td>rule, reason, measure, duration: the child value wins
+                        when present, otherwise the parent's is
+                        inherited.</td></tr>
+                <tr><td>escalation</td>
+                    <td>Replaced wholesale by the child when declared; ladders
+                        never merge rung by rung.</td></tr>
+                <tr><td>annotations</td>
+                    <td>Concatenated: parent's first, then the child's. They
+                        accumulate down the chain.</td></tr>
+            </table>
+            <p>Inheritance cycles, missing parents, and children of failed
+                parents are each detected at load; the offending layout is
+                disabled and the rest of the registry loads normally.
+                <code>/me-ban layouts</code> shows what actually made it in.</p>
+
+            <h2 id="escalation">Escalation ladders</h2>
+            <p>With <code>@escalate</code> present, the duration is not taken
+                from <code>duration</code> but from the ladder, indexed by the
+                player's precedent - the count of their prior non-warning
+                sanctions under the same rule:</p>
+            <pre><code>escalation: [ "7d", "30d", "permanent" ]
+
+first offence   -> 7d
+second offence  -> 30d
+third and later -> permanent   (the last rung repeats)</code></pre>
+            <ul>
+                <li>Only the final rung may be <code>permanent</code>.</li>
+                <li>An explicit <code>duration=...</code> override on the
+                    command bypasses the ladder entirely for that
+                    sanction.</li>
+                <li><code>@tariff(1d)</code> applies a minimum floor after the
+                    ladder picks a rung.</li>
+            </ul>
+
+            <h3 id="precedent">What counts as precedent</h3>
+            <p>Precedent is per rule, and three mechanisms modify it:</p>
+            <table class="items">
+                <tr><td>Warnings</td>
+                    <td>Counted separately: they feed the
+                        <code>@warn-first</code> gate, not the ladder.</td></tr>
+                <tr><td>Lift kind</td>
+                    <td>A <strong>vacated</strong> sanction leaves precedent;
+                        a <strong>pardoned</strong> or
+                        <strong>time-served</strong> one stays. See
+                        <a href="lift.html#kinds">Lifting sanctions</a>.</td></tr>
+                <tr><td>Decay</td>
+                    <td><code>@decay(30d)</code> ages a sanction out of
+                        precedent after the window, without lifting it.</td></tr>
+            </table>
+
+            <h3 id="probation">Probation</h3>
+            <p><code>@probation(2w)</code> - at issue time or on a
+                pardon/served lift - opens a window during which a repeat
+                offence under the rule is aggravated: one extra ladder rung, or
+                a duration multiplier, per the
+                <a href="configuration.html#escalation">escalation policy</a>.</p>
+
+            <h2 id="warn-first">The warn-first gate</h2>
+            <pre><code>toxic:
+  rule: "P.2.4"
+  measure: MUTE
+  duration: 3h
+  annotations:
+    - "@warn-first(2)"</code></pre>
+            <p>The first two offences under <code>P.2.4</code> become formal
+                warnings; the third applies the mute. The gate is bypassed per
+                command with <code>@now</code>, for cases that do not deserve
+                the courtesy.</p>
+
+            <h2 id="weave">Joined cases</h2>
+            <p><code>@weave(#42)</code> on a command attaches the new sanction
+                under an existing one. Chain members share precedent - the
+                ladder consults the whole chain, not just the rule-scoped
+                history - and a <a href="lift.html#cascade">cascade lift</a>
+                can close the entire case at once. Use it when one incident
+                produces several sanctions that should be judged as one
+                course of conduct.</p>
+
+            <h2 id="overriding">Overriding a layout per command</h2>
+            <p>The layout is a starting point, not a straitjacket:</p>
+            <pre><code># Change the measure (directional permission applies):
+/enforce Steve ::cheating @commute(SUSPENSION) duration=30d
+
+# Remove a layout-supplied annotation for this one sanction:
+/enforce Steve ::killaura !@shadow
+
+# Override duration and reason:
+/enforce Steve ::griefing duration=14d reason="Second base this week"</code></pre>
+            <p><code>@measure</code> is rejected when a layout is present -
+                changing a layout's measure is always <code>@commute</code>, so
+                the mitigate/aggravate permission split applies.</p>
+
+            <h2 id="workflow">Editing workflow</h2>
+            <ol>
+                <li>Edit <code>layouts.yml</code>.</li>
+                <li><code>/me-ban reload</code> - layouts reload live,
+                    revalidated against rules and annotations.</li>
+                <li>Check the log line: <code>registry ready: N invocable, M
+                    private, K disabled</code>. A non-zero
+                    <code>disabled</code> means an error line above names the
+                    offender.</li>
+                <li>Inspect the result: <code>/me-ban layouts
+                    &lt;key&gt;</code>.</li>
+                <li>Rehearse: <code>/enforce TestAccount ::key
+                    @dry-run</code>.</li>
+            </ol>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

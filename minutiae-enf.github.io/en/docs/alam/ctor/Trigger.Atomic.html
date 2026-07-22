@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/ctor/Trigger.Atomic">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Trigger::Atomic - ALAM reference</title>
+    <meta name="description" content="Reference for the stateless ALAM Trigger::Atomic constructor and its runtime gating behavior.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Trigger', href: '../sum/Trigger.html', group: 'Container' },
+            { label: 'Trigger::Repeated', href: 'Trigger.Repeated.html', group: 'Trigger forms' },
+            { label: 'Trigger::Sequence', href: 'Trigger.Sequence.html' },
+            { label: 'guard', href: '../keyword/rule.html#guard', group: 'Consumed with' },
+            { label: 'rule.trigger', href: '../keyword/rule.html#trigger' },
+            { label: 'Runtime model', href: '../guide/runtime.html', group: 'See also' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Trigger::Atomic</h1>
+                <span class="entity-badge ctor">constructor</span>
+            </div>
+            <p class="entity-def">A stateless trigger that presents every candidate event directly to the rule guard.</p>
+
+            <table class="entity-meta">
+                <tr><th>Container</th><td><code>Trigger</code></td></tr>
+                <tr><th>Category</th><td>Nullary trigger constructor</td></tr>
+                <tr><th>Observed events</th><td>Exactly one</td></tr>
+                <tr><th>Compile-time effect</th><td><span class="eff pure">pure</span></td></tr>
+                <tr><th>Runtime state</th><td>None</td></tr>
+                <tr><th>Lowered representation</th><td><code>TriggerPlan.Atomic.INSTANCE</code></td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Trigger::Atomic</code></pre>
+            <pre class="gram"><code>atomic-trigger =
+    "Trigger" "::" "Atomic" ;</code></pre>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The containing <code>rule</code> declares other than exactly one event.</li>
+                    <li>The constructor is applied with arguments.</li>
+                    <li>The value is used where a type other than <code>Trigger</code> is required.</li>
+                </ol>
+            </div>
+            <p>The constructor carries no count, span, partition selector, or step list. Adding such state requires <code>Trigger::Repeated</code> or <code>Trigger::Sequence</code>.</p>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>For each incoming event indexed to the containing rule:</p>
+            <ol>
+                <li>Adapt the event facts to the rule's declared event record.</li>
+                <li>Invoke the rule guard with that one record.</li>
+                <li>If the guard returns false, do not fire.</li>
+                <li>If the guard fails during interpretation, treat the result as false.</li>
+                <li>If the guard returns true, attempt to acquire the owning automaton's throttle.</li>
+                <li>If the throttle admits the firing, evaluate the verdict.</li>
+            </ol>
+
+            <div class="normative">
+                <span class="normative-label">State guarantee</span>
+                <p>An atomic trigger retains no information from one candidate event to the next. Two identical events are evaluated independently.</p>
+            </div>
+
+            <p>The absence of trigger state does not mean that the complete firing is side-effect free. A successful firing may consume automaton throttle capacity and may issue a sanction.</p>
+
+            <h3 id="simulation">Simulation</h3>
+            <p>Simulation evaluates the guard without acquiring the throttle or consulting the automaton self-mute set. A passing guard proceeds through forced dry-run sanction resolution.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The compile-time constructor is a nullary <code>Value.VariantV</code>. Evaluation validates the one-event rule shape:</p>
+                <pre><code class="language-java">case "Atomic" -&gt; {
+    if (events.size() != 1) {
+        error(
+            "V001",
+            pos,
+            "an atomic trigger observes exactly one event; "
+                + "the rule declares "
+                + events.size()
+        );
+        throw Abort.INSTANCE;
+    }
+}</code></pre>
+
+                <p>Lowering maps every atomic value to one shared runtime instance:</p>
+                <pre><code class="language-java">case "Atomic" -&gt;
+    TriggerPlan.Atomic.INSTANCE;</code></pre>
+
+                <p>Dispatch uses the same single-event gate as a repeated trigger, with no recurrence plan:</p>
+                <pre><code class="language-java">case TriggerPlan.Atomic ignored -&gt;
+    gateSingle(rule, facts, now, countFiring, null);</code></pre>
+
+                <p>Inside <code>gateSingle</code>, a null repeated plan skips <code>WindowTracker</code> entirely:</p>
+                <pre><code class="language-java">if (rep != null) {
+    final String key = trackKey(rule, rep.part(), facts);
+    if (!windows.record(
+            key,
+            now,
+            rep.count(),
+            rep.withinMs())) {
+        return Outcome.of(FireDecision.WINDOW_WAIT);
+    }
+}
+
+return throttleGate(rule)
+    ? new Outcome(FireDecision.PASS, args)
+    : Outcome.of(FireDecision.THROTTLED);</code></pre>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Trigger time</dt>
+                    <dd>O(1), excluding event adaptation, guard evaluation, and throttle lookup.</dd>
+                    <dt>Trigger storage</dt>
+                    <dd>O(1) shared singleton state.</dd>
+                    <dt>Per partition</dt>
+                    <dd>No allocation and no retained partition key.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">rule&lt;Break&gt; tnt_break {
+    condition {
+        trigger = Trigger::Atomic;
+        guard = (event) -&gt; event.block == "TNT";
+    }
+    =&gt; verdict = break_verdict&lt;P.3.1&gt;;
+}</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The value is used where a type other than <code>Trigger</code> is required.</td></tr>
+                <tr><td><code>E037</code></td><td>Elaboration</td><td>The nullary constructor value is called as a function.</td></tr>
+                <tr><td><code>V001</code></td><td>Evaluation</td><td>The containing rule declares other than exactly one event.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Trigger</code></td><td>The containing trigger sum.</td></tr>
+                <tr><td><code>Trigger::Repeated</code></td><td>Accumulates admitted occurrences in a partitioned window.</td></tr>
+                <tr><td><code>Trigger::Sequence</code></td><td>Tracks an ordered multi-event partial match.</td></tr>
+                <tr><td><code>guard</code></td><td>Determines whether the current atomic event may fire.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

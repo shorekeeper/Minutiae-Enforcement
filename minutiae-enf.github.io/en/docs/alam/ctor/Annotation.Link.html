@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/ctor/Annotation.Link">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Annotation::Link - ALAM reference</title>
+    <meta name="description" content="Reference for attaching an external text reference to an ALAM-produced sanction.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'Annotation', href: '../sum/Annotation.html', group: 'Container' },
+            { label: 'Text', href: '../type/Text.html', group: 'Depends on' },
+            { label: 'Sanction', href: '../rec/Sanction.html', group: 'Consumed by' },
+            { label: 'Annotation::Reason', href: 'Annotation.Reason.html', group: 'Siblings' },
+            { label: 'Annotation::Notify', href: 'Annotation.Notify.html' },
+            { label: 'R005', href: '../diag/R005.html', group: 'Diagnostics' },
+            { label: 'Annotations reference', href: '../../annotations.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>Annotation::Link</h1>
+                <span class="entity-badge ctor">constructor</span>
+            </div>
+            <p class="entity-def">Attaches one opaque external reference string to the persisted sanction record.</p>
+
+            <table class="entity-meta">
+                <tr><th>Container</th><td><code>Annotation</code></td></tr>
+                <tr><th>Category</th><td>Command-scoped descriptor constructor</td></tr>
+                <tr><th>Payload</th><td>One <code>Text</code> reference</td></tr>
+                <tr><th>Layout scope</th><td>Rejected</td></tr>
+                <tr><th>Command form</th><td><code>@link(reference)</code></td></tr>
+                <tr><th>Persisted field</th><td><code>bans.link</code></td></tr>
+                <tr><th>Runtime state</th><td>None</td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>Annotation::Link(reference)                                (1)
+
+Annotation::Link {
+    .ref = reference,
+}                                                           (2)</code></pre>
+            <ul class="synopsis-notes">
+                <li><span class="decl-no">(1)</span><span>Positional construction.</span></li>
+                <li><span class="decl-no">(2)</span><span>Named-field construction. The field name is <code>ref</code>.</span></li>
+            </ul>
+
+            <h2 id="fields">Fields</h2>
+            <table>
+                <tr><th>Field</th><th>Type</th><th>Required</th><th>Description</th></tr>
+                <tr>
+                    <td><code>ref</code></td>
+                    <td><code>Text</code></td>
+                    <td>Yes</td>
+                    <td>Opaque external reference such as a ticket identifier, case-system key, or URL.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <ul class="constraint-list">
+                <li>The constructor requires exactly one <code>Text</code> value.</li>
+                <li>The constructor is command-scoped and produces <code>R005</code> in a stamped <code>Layout</code>.</li>
+                <li>The system actor must hold <code>minutiae.annotation.link</code>.</li>
+                <li>The compiler and resolver do not validate URI syntax, scheme, host, ticket format, or reachability.</li>
+                <li>An empty reference is type-correct and accepted by the current positional schema.</li>
+                <li>One resolved sanction stores at most one link string.</li>
+            </ul>
+
+            <h2 id="semantics">Semantics</h2>
+            <p>The constructor materializes to:</p>
+            <pre class="synopsis"><code>@link(reference)</code></pre>
+            <p>The shared resolver validates the annotation shape, checks permission, and copies the first positional value into <code>ResolvedSanction.link</code>. The executor persists that value in the sanction row.</p>
+
+            <div class="normative">
+                <span class="normative-label">Opaque-reference rule</span>
+                <p>ALAM assigns no semantics to the reference text. It does not fetch the target, verify evidence, authorize access, or infer a protocol from the content.</p>
+            </div>
+
+            <h3 id="display">Display and projections</h3>
+            <p>The database schema retains the link as nullable text. Not every current read projection exposes the field. In particular, the compact <code>SanctionView</code> projection used by several command and web-panel paths does not currently include <code>bans.link</code>.</p>
+            <p>Persisting a link therefore guarantees durable storage but does not guarantee that every inspection surface displays it in the current release.</p>
+
+            <h3 id="duplicates">Duplicate values</h3>
+            <p>If several link annotations reach the resolver, effective annotations are merged by annotation name. The final effective <code>link</code> token supplies the persisted value.</p>
+
+            <h3 id="dry-run">Dry-run behavior</h3>
+            <p>A dry-run resolves and validates the reference but persists no sanction row, so no link is stored.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The constructor field is named <code>ref</code> in the ALAM sum:</p>
+                <pre><code class="language-java">new Ctor(
+    "Link",
+    List.of(new Field("ref", TEXT))
+)</code></pre>
+
+                <p>Materialization creates one annotation token:</p>
+                <pre><code class="language-java">case "Link" -&gt;
+    out.add(directive("link", text(a, 0)));</code></pre>
+
+                <p>The resolver extracts the effective value:</p>
+                <pre><code class="language-java">final String link =
+    firstPositional(effective, "link");</code></pre>
+
+                <p>Persistence writes it directly:</p>
+                <pre><code class="language-java">final SanctionRow row = new SanctionRow(
+    uuid.toString(),
+    r.layoutKey(),
+    r.rule(),
+    r.reason(),
+    issuedAt,
+    expiresAt,
+    staff,
+    renderAnnotations(r),
+    active,
+    measure.name(),
+    stayed ? 1 : 0,
+    stayUntil,
+    r.link(),
+    behaviourMask,
+    // Remaining persistence fields.
+);</code></pre>
+
+                <p>The corresponding SQL parameter is nullable:</p>
+                <pre><code class="language-java">ps.setString(13, row.link());</code></pre>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Materialization</dt>
+                    <dd>O(L), where L is the reference length.</dd>
+                    <dt>Validation</dt>
+                    <dd>O(1) structural checks; no URI parsing or network access.</dd>
+                    <dt>Storage</dt>
+                    <dd>O(L) nullable database text.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">.annotations = {
+    Annotation::Reason("Evidence reviewed by staff"),
+    Annotation::Link(
+        "https://cases.example.invalid/tickets/ME-412"
+    ),
+},</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The reference has a type other than <code>Text</code>.</td></tr>
+                <tr><td><code>E004</code></td><td>Elaboration</td><td>The named form contains an unknown field.</td></tr>
+                <tr><td><code>E005</code></td><td>Elaboration</td><td>The named form omits <code>ref</code>.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The positional form has the wrong arity.</td></tr>
+                <tr><td><code>E035</code></td><td>Elaboration</td><td>The constructor is referenced without its required reference.</td></tr>
+                <tr><td><code>R005</code></td><td>Verification</td><td>A stamped layout contains the command-scoped link constructor.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>Annotation::Reason</code></td><td>Stores explanatory text independently of the external reference.</td></tr>
+                <tr><td><code>Annotation::Notify</code></td><td>Routes a sanction summary but does not automatically include or dereference the link.</td></tr>
+                <tr><td><code>Sanction</code></td><td>Descriptor whose materialized command carries the reference.</td></tr>
+                <tr><td><code>R005</code></td><td>Rejects the constructor from stamped layout scope.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

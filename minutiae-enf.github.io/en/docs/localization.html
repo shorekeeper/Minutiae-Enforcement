@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/localization">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Localization - Minutiae Enforcement</title>
+    <meta name="description" content="Language bundles, per-player locale resolution, grammatical forms, and the embedded fallback layer.">
+    <link rel="stylesheet" href="../../assets/site.css">
+    <script src="../../assets/nav.js" defer></script>
+    <script src="../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Localization</h1>
+            <p class="lede">Every player-facing line renders in the recipient's
+                own locale - including a broadcast, where each viewer sees their
+                own language. This page covers how bundles resolve, how to
+                translate, and how grammatical forms work.</p>
+
+            <h2 id="bundles">Bundles</h2>
+            <p>A bundle is a YAML file at <code>lang/&lt;tag&gt;.yml</code> -
+                <code>en.yml</code>, <code>ru.yml</code>, <code>uk.yml</code>.
+                Templates use ampersand colour codes plus hex
+                (<code>&amp;#8AFFEB</code>) and <code>{name}</code>
+                placeholders:</p>
+            <pre><code>lift:
+  success: "{prefix}&amp;#79FFB0Lifted &amp;#E8EEF0#{id} &amp;8({kind}) ..."</code></pre>
+            <table class="items">
+                <tr><td>{prefix}</td>
+                    <td>Injected from the bundle's own <code>prefix</code>
+                        entry, colour codes intact.</td></tr>
+                <tr><td>scalar values</td>
+                    <td>Player names, reasons, and other user-supplied content
+                        are stripped of colour codes before substitution -
+                        a reason cannot inject formatting.</td></tr>
+                <tr><td>rich values</td>
+                    <td>Some placeholders (<code>{measure}</code>,
+                        <code>{duration}</code>, <code>{rank}</code>,
+                        <code>{kind}</code>, <code>{reason}</code>) are
+                        rendered per recipient at delivery, which is what makes
+                        a mixed-language broadcast work. The reason placeholder
+                        additionally carries a hover card.</td></tr>
+                <tr><td>multi-line</td>
+                    <td>A YAML list joins with newlines into one message - the
+                        ban screen and help text use this.</td></tr>
+            </table>
+
+            <h2 id="resolution">How a message resolves</h2>
+            <p>For each key independently, the first layer that defines it
+                wins:</p>
+            <ol>
+                <li>The on-disk bundle for the player's exact locale tag
+                    (<code>ru_ru</code>);</li>
+                <li>the on-disk bundle for the language part
+                    (<code>ru</code>);</li>
+                <li>the on-disk bundle for
+                    <code>messages.default-locale</code>;</li>
+                <li>the bundle for the default locale <em>shipped inside the
+                    jar</em>;</li>
+                <li>the shipped English bundle.</li>
+            </ol>
+            <div class="callout note"><span class="label">Note</span>
+                <p>Layers 4 and 5 exist because on-disk files are provisioned
+                    once and never overwritten. A plugin update that introduces
+                    new message keys cannot edit your files - the shipped bundle
+                    fills the gap until you merge. The boot log tells you when a
+                    merge is available:
+                    <code>bundle 'ru' lacks 10 key(s); embedded defaults
+                        apply</code>.</p>
+            </div>
+            <p><code>messages.per-player-locale: false</code> collapses steps
+                1-2 and serves everyone the default locale. The console, logs,
+                and the pre-login refusal screen always use the default locale -
+                a player's language is not known before login completes.</p>
+
+            <h2 id="measures">Measure and kind names</h2>
+            <p>Enum identifiers (<code>MUTE</code>, <code>CUSTODY</code>)
+                appear in commands and configuration only; players see display
+                names from the bundle:</p>
+            <pre><code>measure:
+  mute: "Mute"
+  suspension: "Temporary Ban"
+  custody: "Permanent Ban"
+
+lift:
+  kind:
+    vacate: "vacated"
+    pardon: "pardoned"
+    time-served: "time served"</code></pre>
+            <p>Durations are localised the same way, through unit suffixes:</p>
+            <pre><code>duration:
+  permanent: "permanent"
+  unit: { weeks: "w", days: "d", hours: "h", minutes: "m", seconds: "s" }</code></pre>
+
+            <h2 id="ranks">Rank names and grammatical forms</h2>
+            <p>Rank identifiers come from
+                <a href="configuration.html#ranks">your configuration</a>;
+                their display names live in the bundle under
+                <code>rank.&lt;id&gt;</code>. Because ranks are
+                operator-defined, this namespace is open - any
+                <code>rank.*</code> path you add is picked up without a plugin
+                change.</p>
+            <p>Inflected languages need more than one form. A template reading
+                "sanctioned by {rank}" wants the genitive in Russian, so the
+                placeholder requests the <code>by</code> form, which resolves
+                <code>rank.&lt;id&gt;.by</code> and falls back to the base
+                entry when absent:</p>
+            <pre><code># en.yml - no grammatical case, base entries only:
+rank:
+  moderator: "&amp;#8AFFEBModerator"
+
+# ru.yml - base plus the agentive form:
+rank:
+  moderator: "&amp;#8AFFEBМодератор"
+  moderator.by: "&amp;#8AFFEBмодератора"</code></pre>
+            <p>English bundles simply never define the forms; every request
+                collapses onto the base entry. The same fallback applies to any
+                form suffix a future template introduces.</p>
+
+            <h2 id="translating">Translating to a new language</h2>
+            <ol>
+                <li>Copy <code>lang/en.yml</code> to
+                    <code>lang/&lt;tag&gt;.yml</code> - the tag is the
+                    lowercased client language code (<code>de</code>,
+                    <code>pl</code>, <code>uk</code>).</li>
+                <li>Translate values. Never translate keys, placeholder names,
+                    or the measure identifiers used in
+                    <code>config.yml</code>.</li>
+                <li><code>/me-ban reload</code>. Bundles reload live.</li>
+                <li>Missing keys are fine: they fall through to the default
+                    locale and then the shipped bundles. Translate
+                    incrementally; nothing renders as a raw placeholder as
+                    long as the shipped English bundle knows the key.</li>
+            </ol>
+            <div class="callout warn"><span class="label">Warning</span>
+                <p>Keep placeholders intact, including braces:
+                    <code>{target}</code> translated as
+                    <code>{цель}</code> will print literally. A quick check
+                    after translating: trigger each message once on a test
+                    server and look for braces in chat.</p>
+            </div>
+
+            <h2 id="what-is-not">What is not localised</h2>
+            <p>Deliberately, and worth knowing before you file it as a
+                bug:</p>
+            <table class="items">
+                <tr><td>Command vocabulary</td>
+                    <td><code>::layout</code> keys, <code>@annotation</code>
+                        names, measure identifiers, <code>confirm</code> -
+                        grammar, not text.</td></tr>
+                <tr><td>Server log output</td>
+                    <td>Always English: logs are operator diagnostics and get
+                        pasted into issue trackers.</td></tr>
+                <tr><td>Persisted strings</td>
+                    <td>Reasons, audit details, and amendment diffs are stored
+                        as written and shown as stored - a string in the
+                        database has no per-viewer locale.</td></tr>
+                <tr><td>The web panel</td>
+                    <td>English-only in the current release.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="./">Documentation</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

@@ -1,0 +1,19 @@
+# ==========================================================================
+# Minutiae Enforcement - rule registry
+# --------------------------------------------------------------------------
+# Keys are rule identifiers in the canonical form: the literal prefix "P."
+# followed by one or more dot-separated numeric segments (e.g. "P.3.2"). Values
+# are the authoritative human-readable descriptions. Layouts reference these
+# keys; a layout naming an absent key is disabled at load time.
+# ==========================================================================
+
+rules:
+  "P.1.1": "Respect all players and staff members"
+  "P.1.2": "No harassment, hate speech, or discrimination"
+  "P.2.1": "No spam or excessive message flooding in chat"
+  "P.2.4": "No toxic behaviour toward other players"
+  "P.3.1": "No unauthorised modification of world terrain"
+  "P.3.2": "No destruction of structures owned by other players"
+  "P.4.1": "No exploitation of server bugs or duplication glitches"
+  "P.5.1": "No use of unauthorised third-party client modifications"
+  "P.5.2": "No automation of gameplay via macros or scripts"

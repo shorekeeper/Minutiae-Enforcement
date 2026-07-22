@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/guide/pipeline">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>ALAM compilation pipeline - Minutiae Enforcement</title>
+    <meta name="description" content="ALAM lexing, parsing, elaboration, evaluation, verification, lowering, and plan publication.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <h1>Compilation pipeline</h1>
+            <p class="lede">An ALAM file is compiled completely before any rule from that file is armed. A phase error rejects the unit as a whole and never publishes a partial plan.</p>
+
+            <h2 id="phases">Phases</h2>
+            <table>
+                <tr><th>Phase</th><th>Input</th><th>Output</th><th>Code family</th></tr>
+                <tr><td>Lexing</td><td>Source text</td><td>Structure-of-arrays token buffer</td><td><code>L001-L008</code></td></tr>
+                <tr><td>Parsing</td><td>Token buffer</td><td>AST declarations</td><td><code>P001-P013</code></td></tr>
+                <tr><td>Elaboration</td><td>AST</td><td>Accepted declarations and identity-keyed side tables</td><td><code>E001-E037</code></td></tr>
+                <tr><td>Evaluation</td><td>Elaborated declarations</td><td>Residual values, rules, layouts, and automata</td><td><code>V001-V017</code></td></tr>
+                <tr><td>Verification</td><td>Residual artifacts</td><td>Artifacts with runtime invariants established</td><td><code>R001-R005</code>, <code>W003</code></td></tr>
+                <tr><td>Lowering</td><td>Verified artifacts</td><td>Runtime plans and layout definitions</td><td>None</td></tr>
+            </table>
+
+            <h2 id="gating">Phase gating</h2>
+            <p>Lexing, parsing, and elaboration share one diagnostic collection. Parsing and elaboration retain valid sibling declarations to provide more than one useful diagnostic per run. Evaluation starts only if no earlier error exists. Verification starts only if evaluation succeeds. Lowering starts only after verification reports no error.</p>
+            <pre class="gram"><code>source
+  -&gt; tokens
+  -&gt; declarations
+  -&gt; elaborated declarations
+  -&gt; residual values
+  -&gt; verified artifacts
+  -&gt; UnitPlan</code></pre>
+
+            <h2 id="elaboration">Elaboration</h2>
+            <p>The elaborator processes declarations in source order. Names become visible only after declaration, which makes forward references and definition cycles unrepresentable. It performs bidirectional type checking, effect checking, member resolution, constructor resolution, match exhaustiveness, and automaton item validation.</p>
+            <p>Instead of building a second tree, Java stores inferred types and resolved symbols in <code>IdentityHashMap</code> side tables keyed by AST node identity. Evaluation walks the original syntax and consults these tables.</p>
+
+            <h2 id="evaluation">Compile-time evaluation</h2>
+            <p>Constants, matrices, transforms, template instantiations, expansions, and automaton set algebra are normalized at load time. Guard and verdict bodies are captured as closures rather than executed. Each closure retains its lexical <code>Env</code> chain, so constants and template parameters are already available when dispatch evaluates it.</p>
+            <p>Arithmetic is checked. Integer overflow, division by zero, negative duration results, invalid text patterns, and evaluation-depth exhaustion become diagnostics rather than uncaught Java exceptions.</p>
+
+            <h2 id="verification">Verification</h2>
+            <p>Verification checks facts not fully represented by static types: rule identifiers must exist in the external rule registry, layout measure and duration terms must agree, escalation ladders must be valid, layout keys must be non-blank, and stamped layouts may carry only configuration-scoped annotations.</p>
+
+            <h2 id="lowering">Lowering</h2>
+            <p>Lowering is a structural translation with no user-facing failure mode. Trigger values become primitive <code>TriggerPlan</code> records, event names become <code>EventKind</code> values, duration terms become millisecond spans, and partition selectors become <code>TriggerPlan.Part</code> values.</p>
+
+            <h2 id="publication">File loading and publication</h2>
+            <p><code>AlamService</code> scans <code>&lt;data&gt;/alam/*.alam</code> in lexical file-name order. A failed file is skipped, while accepted sibling files remain available. Accepted plans are copied into immutable lists and published through volatile references.</p>
+            <p>Stamped layout collisions are deterministic. The first accepted producer in file-name order owns the key; later producers are logged and dropped. File-authored entries in <code>layouts.yml</code> remain authoritative over stamped definitions.</p>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">const Duration span = 30s;
+
+rule&lt;Chat&gt; flood {
+    condition {
+        trigger = Trigger::Repeated(5, span, GroupBy::Subject);
+        guard = (event) -&gt; event.length &gt; 120;
+    }
+    =&gt; verdict = flood_verdict&lt;Measure::MUTE, 3h&gt;;
+}
+
+automaton chat_watch {
+    use flood;
+}</code></pre>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="On this page"></aside>
+</div>
+</body>
+</html>

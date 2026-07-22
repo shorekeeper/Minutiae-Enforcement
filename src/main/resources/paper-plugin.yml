@@ -1,0 +1,129 @@
+# Plugin descriptor consumed by the Paper plugin loader.
+name: MinutiaeEnforcement
+version: '${version}'
+main: org.synergyst.minutiae.MinutiaeEnforcement
+api-version: '1.21'
+authors:
+  - Synergyst
+description: 'Minutiae Enforcement - rule-bound sanction orchestration engine.'
+website: 'https://synergyst.org'
+
+# ==========================================================================
+# Permission registry.
+# --------------------------------------------------------------------------
+# Leaf nodes default to false and are granted through one of two bundle nodes:
+# 'minutiae.staff' aggregates the day-to-day moderation surface, and
+# 'minutiae.admin' (operator default) aggregates everything including
+# destructive and reload capabilities. Behavioural and directive annotation
+# permissions follow the convention minutiae.annotation.<name>.
+#
+# Registered leaf defaults of false apply to operators as well; an operator
+# receives a leaf only through the admin bundle chain. Every bundle name and
+# every leaf name must therefore appear exactly once in this file: a duplicate
+# mapping key silently replaces its predecessor during YAML parsing, severing
+# the grant chain without any load-time error.
+# ==========================================================================
+permissions:
+
+  minutiae.admin:
+    description: 'Full access to every Minutiae Enforcement capability.'
+    default: op
+    children:
+      minutiae.staff: true
+      minutiae.command.reload: true
+      minutiae.command.info: true
+      minutiae.commute.aggravate: true
+      minutiae.waive: true
+      minutiae.annotation.shadow: true
+      minutiae.annotation.ip-lock: true
+      minutiae.annotation.remand: true
+      minutiae.annotation.backdate: true
+      minutiae.annotation.as: true
+      minutiae.amend: true
+      minutiae.appeal.review: true
+      minutiae.annotation.amend: true
+      minutiae.lift.blocking: true
+      minutiae.lift.cascade: true
+      minutiae.lift.bulk: true
+      minutiae.lift.reinstate: true
+
+  minutiae.staff:
+    description: 'Standard moderation surface.'
+    default: false
+    children:
+      minutiae.command.enforce: true
+      minutiae.command.lift: true
+      minutiae.command.info: true
+      minutiae.command.docket: true
+      minutiae.command.ping: true
+      minutiae.command.rules: true
+      minutiae.command.layouts: true
+      minutiae.command.annotations: true
+      minutiae.command.fingerprint: true
+      minutiae.command.verbose: true
+      minutiae.commute.mitigate: true
+      minutiae.notify.staff: true
+      minutiae.fingerprint.alert: true
+      minutiae.annotation.silent: true
+      minutiae.annotation.evidence: true
+      minutiae.annotation.notify: true
+      minutiae.annotation.warn-first: true
+      minutiae.annotation.escalate: true
+      minutiae.annotation.appeal: true
+      minutiae.annotation.decay: true
+      minutiae.annotation.ghost: true
+      minutiae.annotation.rubberband: true
+      minutiae.annotation.now: true
+      minutiae.annotation.dry-run: true
+      minutiae.annotation.link: true
+      minutiae.annotation.reason: true
+      minutiae.annotation.stay: true
+      minutiae.annotation.measure: true
+      minutiae.annotation.commute: true
+      minutiae.annotation.count: true
+      minutiae.annotation.tariff: true
+      minutiae.annotation.waive: true
+      minutiae.appeal.submit: true
+      minutiae.appeal.review: true
+      minutiae.annotation.weave: true
+      minutiae.annotation.probation: true
+      minutiae.annotation.transcript: true
+      minutiae.annotation.note: true
+      minutiae.annotation.expunge: true
+      minutiae.annotation.review: true
+      minutiae.annotation.suspended: true
+      minutiae.lift.pardon: true
+      minutiae.lift.served: true
+      minutiae.lift.foreign: true
+
+  minutiae.command.enforce:   { description: 'Issue sanctions.',            default: false }
+  minutiae.command.lift:      { description: 'Lift sanctions.',             default: false }
+  minutiae.command.info:      { description: 'Inspect a sanction.',         default: false }
+  minutiae.command.docket:    { description: 'View a player docket.',       default: false }
+  minutiae.command.reload:    { description: 'Reload configuration.',       default: op }
+  minutiae.command.ping:      { description: 'Probe storage.',              default: false }
+  minutiae.command.rules:     { description: 'Inspect rules.',              default: false }
+  minutiae.command.layouts:   { description: 'Inspect layouts.',            default: false }
+  minutiae.command.annotations: { description: 'Inspect annotations.',      default: false }
+  minutiae.command.fingerprint: { description: 'Inspect fingerprints.',     default: false }
+  minutiae.command.verbose:   { description: 'Toggle verbose reports.',     default: false }
+  minutiae.command.alam:  { description: 'Inspect and simulate automata.', default: op }
+
+  minutiae.commute.mitigate:  { description: 'Commute toward a lighter measure.',  default: false }
+  minutiae.commute.aggravate: { description: 'Commute toward a harsher measure.',  default: op }
+  minutiae.waive:             { description: 'Waive a companion requirement.',     default: op }
+
+  minutiae.amend:          { description: 'Amend an existing sanction.', default: op }
+  minutiae.appeal.submit:  { description: 'Submit an appeal.',           default: true }
+  minutiae.appeal.review:  { description: 'Review and decide appeals.',  default: false }
+
+  minutiae.lift.pardon:    { description: 'Lift under the pardon kind.',                default: false }
+  minutiae.lift.served:    { description: 'Lift under the time-served kind.',           default: false }
+  minutiae.lift.foreign:   { description: 'Lift another staff member sanction.',        default: false }
+  minutiae.lift.blocking:  { description: 'Lift a connection-blocking sanction.',       default: false }
+  minutiae.lift.cascade:   { description: 'Lift a whole joinder chain.',                default: op }
+  minutiae.lift.bulk:      { description: 'Bulk-lift by rule or staff criterion.',      default: op }
+  minutiae.lift.reinstate: { description: 'Reverse an erroneous lift.',                 default: op }
+
+  minutiae.notify.staff:      { description: 'Receive staff notifications.',       default: false }
+  minutiae.fingerprint.alert: { description: 'Receive evasion alerts.',            default: false }

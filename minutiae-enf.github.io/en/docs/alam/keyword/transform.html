@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/keyword/transform">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>transform - ALAM reference</title>
+    <meta name="description" content="Detailed reference for ALAM pure transforms, contextual function typing, closure capture, composition, runtime reuse, and expansion.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [
+            { label: 'function', href: '../type/function.html', group: 'Type model' },
+            { label: 'schema', href: 'schema.html', group: 'Common inputs' },
+            { label: 'matrix', href: 'matrix.html' },
+            { label: 'Layout', href: '../rec/Layout.html', group: 'Common outputs' },
+            { label: 'Rule', href: '../type/Rule.html' },
+            { label: 'expand', href: 'expand.html', group: 'Consumed by' },
+            { label: 'with', href: 'with.html' },
+            { label: 'E007', href: '../diag/E007.html', group: 'Diagnostics' },
+            { label: 'E008', href: '../diag/E008.html' },
+            { label: 'E016', href: '../diag/E016.html' },
+            { label: 'E023', href: '../diag/E023.html' },
+            { label: 'V012', href: '../diag/V012.html' },
+            { label: 'V013', href: '../diag/V013.html' }
+        ];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>transform</h1>
+                <span class="entity-badge keyword">keyword</span>
+            </div>
+            <p class="entity-def">Declares a named pure unary function, commonly used to convert a schema row into a generated layout or rule.</p>
+
+            <table class="entity-meta">
+                <tr><th>Category</th><td>Top-level value declaration</td></tr>
+                <tr><th>Introduces</th><td>One global function value</td></tr>
+                <tr><th>Arity</th><td>Exactly one parameter</td></tr>
+                <tr><th>Declared effect</th><td><span class="eff pure">pure</span></td></tr>
+                <tr><th>Type identity</th><td>Structural <code>(Source) -&gt; Target</code></td></tr>
+                <tr><th>Declaration evaluation</th><td>At compile time</td></tr>
+                <tr><th>Application</th><td>Compile time or runtime when reachable from a runtime closure</td></tr>
+                <tr><th>Java representation</th><td>Usually <code>Value.ClosureV</code>, optionally <code>Value.ComposeV</code></td></tr>
+            </table>
+
+            <h2 id="syntax">Syntax</h2>
+            <pre class="synopsis"><code>transform&lt;source-type -&gt; target-type&gt;
+    name = function-expression;</code></pre>
+
+            <pre class="gram"><code>transform-declaration =
+    "transform" "&lt;"
+        source-type "-&gt;" target-type
+    "&gt;"
+    identifier "=" expression ";" ;</code></pre>
+
+            <h2 id="parameters">Parameters</h2>
+            <table>
+                <tr><th>Part</th><th>Type or form</th><th>Description</th></tr>
+                <tr>
+                    <td><code>source-type</code></td>
+                    <td>Resolvable value type</td>
+                    <td>Exact type of the transform's single argument.</td>
+                </tr>
+                <tr>
+                    <td><code>target-type</code></td>
+                    <td>Resolvable value type</td>
+                    <td>Exact result type produced by successful application.</td>
+                </tr>
+                <tr>
+                    <td><code>name</code></td>
+                    <td>Identifier</td>
+                    <td>Global value name used by calls, composition, and expansion.</td>
+                </tr>
+                <tr>
+                    <td><code>function-expression</code></td>
+                    <td><code>(Source) -&gt; Target</code> with <code>pure</code> effect</td>
+                    <td>Usually a one-parameter lambda, but any compatible function-valued expression is accepted.</td>
+                </tr>
+            </table>
+
+            <h2 id="constraints">Constraints</h2>
+            <div class="normative">
+                <span class="normative-label">Ill-formed if</span>
+                <ol>
+                    <li>The source type is unknown at the declaration point.</li>
+                    <li>The target type is unknown at the declaration point.</li>
+                    <li>The transform name duplicates an earlier top-level declaration.</li>
+                    <li>The body does not have the structural type <code>(Source) -&gt; Target</code>.</li>
+                    <li>The body lambda declares other than exactly one parameter.</li>
+                    <li>The function body calls a query-capable function.</li>
+                    <li>A composed inner function does not produce a value accepted by the outer function.</li>
+                </ol>
+            </div>
+
+            <ul class="constraint-list">
+                <li>There is no implicit conversion between source, intermediate, or target types.</li>
+                <li>The source and target types may be primitive, records, lists, <code>Measure</code>, <code>Sanction</code>, <code>Layout</code>, or structural <code>Rule&lt;...&gt;</code> shapes where those names are accepted by source type resolution.</li>
+                <li>A transform is always unary even when its source type is itself a record or list.</li>
+                <li>A transform may refer only to earlier visible values and functions.</li>
+                <li>Recursive transform definitions are not representable under declaration-before-use.</li>
+            </ul>
+
+            <h3 id="source-type-availability">Source type availability</h3>
+            <p>The transform header uses the ordinary type namespace. Constructor path roots are not automatically type names.</p>
+            <p>For example, <code>Layout</code>, <code>Sanction</code>, <code>Measure</code>, primitive types, earlier schemas, list types, and structural rule shapes are valid header types. Other built-in sums may be constructible through paths without being accepted as general header types by the current implementation.</p>
+
+            <h2 id="semantics">Semantics</h2>
+
+            <h3 id="declaration-evaluation">Declaration evaluation</h3>
+            <p>The transform declaration evaluates its function expression once while the unit is compiled and binds the resulting function value in the global environment.</p>
+            <p>For an ordinary lambda, declaration evaluation creates a closure. It does not execute the lambda body.</p>
+
+            <pre><code class="language-alam">transform&lt;Int -&gt; Int&gt; double =
+    (value) -&gt; value * 2;</code></pre>
+
+            <p>Loading the declaration creates a closure over <code>value * 2</code>. Multiplication occurs only when <code>double</code> is applied.</p>
+
+            <h3 id="application">Application</h3>
+            <p>Applying the transform:</p>
+            <ol>
+                <li>evaluates the argument;</li>
+                <li>creates a child lexical environment;</li>
+                <li>binds the one declared parameter to the argument value;</li>
+                <li>evaluates the transform body under the pure function effect;</li>
+                <li>returns the resulting value.</li>
+            </ol>
+
+            <p>Argument evaluation follows the allowance of the surrounding call site. The transform body itself remains pure.</p>
+
+            <h3 id="compile-time-and-runtime">Compile-time and runtime use</h3>
+            <p>The declaration is always evaluated at compile time. Applications are not restricted to <code>expand</code>.</p>
+            <table>
+                <tr><th>Call location</th><th>When the body runs</th></tr>
+                <tr><td>Constant initializer</td><td>Compile time</td></tr>
+                <tr><td>Matrix cell</td><td>Compile time</td></tr>
+                <tr><td>Another transform application evaluated during expansion</td><td>Compile time</td></tr>
+                <tr><td>Guard closure body</td><td>Runtime dispatch</td></tr>
+                <tr><td>Verdict closure body</td><td>Runtime dispatch</td></tr>
+            </table>
+
+            <div class="normative">
+                <span class="normative-label">Effect preservation</span>
+                <p>A transform remains pure when called at runtime. Runtime availability does not grant it access to <code>precedent</code>, <code>fingerprint_score</code>, <code>is_online</code>, or <code>now</code>.</p>
+            </div>
+
+            <h3 id="closure-capture">Closure capture</h3>
+            <p>A lambda transform captures the evaluator environment object existing at declaration time. Earlier constants, matrices, and transforms can be resolved through that environment when the body later runs.</p>
+            <p>The root environment continues growing as later declarations are evaluated, but elaboration prevents the transform syntax from resolving a later declaration. Correct source programs therefore cannot use later growth as a forward-reference mechanism.</p>
+
+            <h3 id="composition">Composition</h3>
+            <p>Member syntax denotes right-to-left function composition when the receiver has a pure unary function type and the member name resolves to another compatible earlier pure unary function.</p>
+
+            <pre class="synopsis"><code>outer.inner(argument)
+=
+outer(inner(argument))</code></pre>
+
+            <p>Given:</p>
+            <pre><code class="language-alam">transform&lt;Int -&gt; Int&gt; double =
+    (value) -&gt; value * 2;
+
+transform&lt;Int -&gt; Text&gt; render =
+    (value) -&gt; match(value) {
+        0 =&gt; "zero",
+        _ =&gt; "non-zero",
+    };</code></pre>
+
+            <p>The composition <code>render.double</code> has type <code>(Int) -&gt; Text</code> and applies <code>double</code> before <code>render</code>.</p>
+
+            <div class="normative">
+                <span class="normative-label">Composition lookup</span>
+                <p>The member after the dot is resolved as a global earlier transform or a global constant whose type is a pure unary function. It is not looked up as an arbitrary field on the receiver.</p>
+            </div>
+
+            <p>The same surface syntax denotes field access when the receiver is a record or event. Elaboration selects field access or composition from the receiver's static type.</p>
+
+            <h3 id="expand">Use by expand</h3>
+            <p><code>expand</code> imposes a narrower contract than an ordinary transform call:</p>
+            <ul>
+                <li>the transform must be pure and unary;</li>
+                <li>the expansion argument must be a list of the transform source type;</li>
+                <li>the target type must be <code>Layout</code> or structural <code>Rule&lt;Events...&gt;</code>;</li>
+                <li>the transform is applied once per list element in source order.</li>
+            </ul>
+
+            <p>A transform producing any other target type remains valid but cannot be the direct expansion target.</p>
+
+            <h3 id="failures">Evaluation failure</h3>
+            <p>Transform application may fail during checked arithmetic, duration processing, text-pattern compilation, nested template instantiation, or evaluation-depth enforcement.</p>
+            <p>During compilation, the failure is reported against the relevant expression and rejects final publication of the unit. During runtime guard or verdict interpretation, the failure is contained by the dispatch engine.</p>
+
+            <div class="normative">
+                <span class="normative-label">No partial unit</span>
+                <p>An expansion may have temporarily appended artifacts produced by earlier rows before a later transform application fails. The planner still publishes no unit because the shared diagnostics contain an error.</p>
+            </div>
+
+            <h2 id="effect">Effect</h2>
+            <p><span class="eff pure">pure</span> The declared function type is always pure.</p>
+            <p>A pure transform may be called from both pure and query-capable positions. A query function cannot be assigned to a transform declaration.</p>
+
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <p>The header creates one structural function type:</p>
+                <pre><code class="language-java">final Type source =
+    resolveType(transform.from());
+
+final Type target =
+    resolveType(transform.to());
+
+final Func functionType =
+    new Func(
+        List.of(source),
+        target,
+        Effect.PURE
+    );
+
+define(
+    transform.name(),
+    new Symbol.TransformSym(
+        transform.name(),
+        functionType,
+        transform.body(),
+        transform.pos()
+    ),
+    transform.pos()
+);
+
+check(
+    transform.body(),
+    functionType,
+    new Scope(null),
+    Effect.PURE
+);</code></pre>
+
+                <p>Evaluation binds the function value rather than executing an ordinary lambda body:</p>
+                <pre><code class="language-java">case Decl.Transform transform -&gt;
+    global.bind(
+        transform.name(),
+        eval(transform.body(), global)
+    );</code></pre>
+
+                <p>A lambda evaluates to a closure carrying its lexical environment and elaborated type:</p>
+                <pre><code class="language-java">case Expr.Lambda lambda -&gt;
+    new Value.ClosureV(
+        lambda.params(),
+        lambda.body(),
+        env,
+        (Type.Func) tables.typeOf.get(lambda)
+    );</code></pre>
+
+                <p>Application creates one child frame:</p>
+                <pre><code class="language-java">case Value.ClosureV closure -&gt; {
+    final Env frame =
+        closure.env().child(args.size());
+
+    for (int i = 0;
+            i &lt; closure.params().size();
+            i++) {
+        frame.bind(
+            closure.params().get(i),
+            args.get(i)
+        );
+    }
+
+    yield eval(
+        closure.body(),
+        frame
+    );
+}</code></pre>
+
+                <p>Composition stores outer and inner values explicitly:</p>
+                <pre><code class="language-java">record ComposeV(
+    Value outer,
+    Value inner
+) implements Value {
+}</code></pre>
+
+                <p>Application is right-to-left:</p>
+                <pre><code class="language-java">case Value.ComposeV composition -&gt;
+    apply(
+        composition.outer(),
+        List.of(
+            apply(
+                composition.inner(),
+                args,
+                pos
+            )
+        ),
+        pos
+    );</code></pre>
+
+                <p>Elaboration validates composition compatibility:</p>
+                <pre><code class="language-java">if (!assignable(
+        inner.result(),
+        outer.params().get(0))) {
+    error(
+        "E016",
+        member.pos(),
+        "composition mismatch: '"
+            + member.name()
+            + "' produces "
+            + show(inner.result())
+            + " but the receiver consumes "
+            + show(outer.params().get(0))
+    );
+
+    throw Abort.INSTANCE;
+}</code></pre>
+
+                <ul>
+                    <li>Compile-time application depth is limited to 512.</li>
+                    <li>Runtime interpreter application depth is limited to 256.</li>
+                    <li>Compile-time closures capture the mutable root environment object, not a copied snapshot.</li>
+                    <li>Name resolution tables prevent valid source from exploiting later root-environment growth.</li>
+                    <li>Runtime interpretation reuses the closure's captured environment and creates only a small child frame per call.</li>
+                    <li>Function values compare by identity rather than structural body equality.</li>
+                </ul>
+            </div>
+
+            <div class="complexity">
+                <span class="complexity-label">Complexity</span>
+                <dl>
+                    <dt>Declaration</dt>
+                    <dd>O(1) closure construction, excluding elaboration of the body syntax.</dd>
+                    <dt>Application</dt>
+                    <dd>O(P + B), where P is parameter count, fixed at one for transforms, and B is body cost.</dd>
+                    <dt>Composition</dt>
+                    <dd>O(N + ΣB), where N is composed function count and B is each body cost.</dd>
+                    <dt>Expansion</dt>
+                    <dd>O(R × B), where R is input row count.</dd>
+                    <dt>Call storage</dt>
+                    <dd>One child environment and result value per active application.</dd>
+                    <dt>Closure storage</dt>
+                    <dd>One parameter list, body reference, environment reference, and function type.</dd>
+                </dl>
+            </div>
+
+            <h2 id="example">Example</h2>
+            <pre><code class="language-alam">schema PolicyRow {
+    Text key;
+    Rule rule;
+    Text reason;
+    Measure measure;
+    Duration span;
+}
+
+transform&lt;PolicyRow -&gt; Layout&gt; to_layout =
+    (entry) -&gt; Layout {
+        .key = entry.key,
+        .rule = entry.rule,
+        .reason = entry.reason,
+        .measure = entry.measure,
+        .duration = Duration::Fixed(entry.span),
+        .escalation = Escalation::Steps({
+            Duration::Fixed(entry.span),
+            Duration::Fixed(entry.span * 4),
+            Duration::Permanent,
+        }),
+        .annotations = {
+            Annotation::Escalate,
+            Annotation::Notify("staff"),
+        },
+    };
+
+expand to_layout(policy_rows);</code></pre>
+
+            <h2 id="diagnostics">Diagnostics</h2>
+            <table class="diag-list">
+                <tr><th>Code</th><th>Phase</th><th>Condition</th></tr>
+                <tr><td><code>P001</code></td><td>Parsing</td><td>A source type, arrow, target type, name, assignment token, body, or semicolon is missing.</td></tr>
+                <tr><td><code>E001</code></td><td>Elaboration</td><td>The body references an unknown or later value.</td></tr>
+                <tr><td><code>E002</code></td><td>Elaboration</td><td>The source or target type is unknown or malformed.</td></tr>
+                <tr><td><code>E003</code></td><td>Elaboration</td><td>The function expression or body result has an incompatible type.</td></tr>
+                <tr><td><code>E007</code></td><td>Elaboration</td><td>The transform body calls a query-capable function.</td></tr>
+                <tr><td><code>E008</code></td><td>Elaboration</td><td>The lambda has other than one parameter or a nested call has the wrong arity.</td></tr>
+                <tr><td><code>E014</code></td><td>Elaboration</td><td>The transform name duplicates an earlier global declaration.</td></tr>
+                <tr><td><code>E016</code></td><td>Elaboration</td><td>Composition names an invalid inner function or has incompatible intermediate types.</td></tr>
+                <tr><td><code>E023</code></td><td>Elaboration</td><td>The transform is used by <code>expand</code> with an unsupported target or argument shape.</td></tr>
+                <tr><td><code>E037</code></td><td>Elaboration</td><td>A nested call attempts to invoke a non-function value.</td></tr>
+                <tr><td><code>V003</code></td><td>Evaluation</td><td>A nested template instantiation fails a primary constraint.</td></tr>
+                <tr><td><code>V005</code></td><td>Evaluation</td><td>The body performs integer division by zero.</td></tr>
+                <tr><td><code>V006</code></td><td>Evaluation</td><td>The body overflows checked arithmetic.</td></tr>
+                <tr><td><code>V008</code></td><td>Evaluation</td><td>The body produces a negative duration or uses a negative duration factor.</td></tr>
+                <tr><td><code>V012</code></td><td>Evaluation</td><td>Application exceeds the compile-time depth limit.</td></tr>
+                <tr><td><code>V013</code></td><td>Evaluation</td><td>A value expected to be applicable is not a supported function value.</td></tr>
+                <tr><td><code>V015</code></td><td>Evaluation</td><td>The body evaluates an invalid Java regular expression.</td></tr>
+            </table>
+
+            <h2 id="see-also">See also</h2>
+            <table class="items">
+                <tr><td><code>function</code></td><td>Structural type, closure representation, variance, and effect rules.</td></tr>
+                <tr><td><code>schema</code></td><td>Common nominal source row type.</td></tr>
+                <tr><td><code>matrix</code></td><td>Provides ordered source values to expansion.</td></tr>
+                <tr><td><code>expand</code></td><td>Applies a compatible transform to each input element.</td></tr>
+                <tr><td><code>with</code></td><td>Pure functional record update usable inside a transform.</td></tr>
+                <tr><td><code>Layout</code></td><td>Primary generated target retained by the layout registry.</td></tr>
+            </table>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM reference</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>

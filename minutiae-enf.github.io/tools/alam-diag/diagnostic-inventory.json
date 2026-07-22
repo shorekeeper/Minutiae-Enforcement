@@ -1,0 +1,1792 @@
+[
+  {
+    "code": "L001",
+    "phase": "Lexing",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "L002",
+    "phase": "Lexing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "L002",
+        "phase": "Lexing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java",
+        "className": "Lexer",
+        "line": 210,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "L003",
+    "phase": "Lexing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "L003",
+        "phase": "Lexing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java",
+        "className": "Lexer",
+        "line": 205,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "L004",
+    "phase": "Lexing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "L004",
+        "phase": "Lexing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java",
+        "className": "Lexer",
+        "line": 167,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "L005",
+    "phase": "Lexing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "L005",
+        "phase": "Lexing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java",
+        "className": "Lexer",
+        "line": 176,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "L006",
+    "phase": "Lexing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "L006",
+        "phase": "Lexing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java",
+        "className": "Lexer",
+        "line": 328,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "L007",
+    "phase": "Lexing",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "L008",
+    "phase": "Lexing",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "P001",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 262,
+        "call": "report"
+      },
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 321,
+        "call": "report"
+      },
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 815,
+        "call": "report"
+      },
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 824,
+        "call": "report"
+      },
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 848,
+        "call": "report"
+      },
+      {
+        "code": "P001",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 922,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P002",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P002",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 101,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P003",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P003",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 632,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P004",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P004",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 628,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P005",
+    "phase": "Parsing",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "P006",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P006",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 480,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P007",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P007",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 187,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P008",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P008",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 763,
+        "call": "report"
+      },
+      {
+        "code": "P008",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 785,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P009",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P009",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 217,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P010",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P010",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 724,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P011",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P011",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 206,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "P013",
+    "phase": "Parsing",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "P013",
+        "phase": "Parsing",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/parse/Parser.java",
+        "className": "Parser",
+        "line": 591,
+        "call": "report"
+      }
+    ]
+  },
+  {
+    "code": "E001",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 241,
+        "call": "error"
+      },
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 297,
+        "call": "error"
+      },
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 517,
+        "call": "error"
+      },
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 528,
+        "call": "error"
+      },
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 534,
+        "call": "error"
+      },
+      {
+        "code": "E001",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 651,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E002",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E002",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 158,
+        "call": "error"
+      },
+      {
+        "code": "E002",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 351,
+        "call": "error"
+      },
+      {
+        "code": "E002",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 361,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E003",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E003",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 400,
+        "call": "error"
+      },
+      {
+        "code": "E003",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 409,
+        "call": "error"
+      },
+      {
+        "code": "E003",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 423,
+        "call": "error"
+      },
+      {
+        "code": "E003",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 802,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E004",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E004",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 769,
+        "call": "error"
+      },
+      {
+        "code": "E004",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 808,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E005",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E005",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 781,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E006",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E006",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 646,
+        "call": "error"
+      },
+      {
+        "code": "E006",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 668,
+        "call": "error"
+      },
+      {
+        "code": "E006",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 701,
+        "call": "error"
+      },
+      {
+        "code": "E006",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 752,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E007",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E007",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 626,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E008",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E008",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 166,
+        "call": "error"
+      },
+      {
+        "code": "E008",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 433,
+        "call": "error"
+      },
+      {
+        "code": "E008",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 609,
+        "call": "error"
+      },
+      {
+        "code": "E008",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 630,
+        "call": "error"
+      },
+      {
+        "code": "E008",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 656,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E009",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E009",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 481,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E010",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E010",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 849,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E011",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E011",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 900,
+        "call": "error"
+      },
+      {
+        "code": "E011",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 906,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E012",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E012",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 858,
+        "call": "error"
+      },
+      {
+        "code": "E012",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 866,
+        "call": "error"
+      },
+      {
+        "code": "E012",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 892,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E013",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E013",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 873,
+        "call": "error"
+      },
+      {
+        "code": "E013",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 881,
+        "call": "error"
+      },
+      {
+        "code": "E013",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 887,
+        "call": "error"
+      },
+      {
+        "code": "E013",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 917,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E014",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E014",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 142,
+        "call": "error"
+      },
+      {
+        "code": "E014",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 148,
+        "call": "error"
+      },
+      {
+        "code": "E014",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 223,
+        "call": "error"
+      },
+      {
+        "code": "E014",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 441,
+        "call": "error"
+      },
+      {
+        "code": "E014",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 1038,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E015",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E015",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 555,
+        "call": "error"
+      },
+      {
+        "code": "E015",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 564,
+        "call": "error"
+      },
+      {
+        "code": "E015",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 594,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E016",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E016",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 579,
+        "call": "error"
+      },
+      {
+        "code": "E016",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 584,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E017",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E017",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 245,
+        "call": "error"
+      },
+      {
+        "code": "E017",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 502,
+        "call": "error"
+      },
+      {
+        "code": "E017",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 642,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E018",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E018",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 250,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E019",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E019",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 952,
+        "call": "error"
+      },
+      {
+        "code": "E019",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 971,
+        "call": "error"
+      },
+      {
+        "code": "E019",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 981,
+        "call": "error"
+      },
+      {
+        "code": "E019",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 995,
+        "call": "error"
+      },
+      {
+        "code": "E019",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 1011,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E020",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E021",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E022",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E022",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 312,
+        "call": "error"
+      },
+      {
+        "code": "E022",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 326,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E023",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E023",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 187,
+        "call": "error"
+      },
+      {
+        "code": "E023",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 194,
+        "call": "error"
+      },
+      {
+        "code": "E023",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 203,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E024",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E025",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E025",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 281,
+        "call": "error"
+      },
+      {
+        "code": "E025",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 307,
+        "call": "error"
+      },
+      {
+        "code": "E025",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 343,
+        "call": "error"
+      },
+      {
+        "code": "E025",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 741,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E026",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E027",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E028",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E028",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 217,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E029",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E030",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E031",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E032",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E032",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 942,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E033",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E033",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 789,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E034",
+    "phase": "Elaboration",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "E035",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E035",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 539,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E036",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E036",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 507,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "E037",
+    "phase": "Elaboration",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "E037",
+        "phase": "Elaboration",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/sem/Elaborator.java",
+        "className": "Elaborator",
+        "line": 622,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V001",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 146,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 160,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 167,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 173,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 202,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 210,
+        "call": "error"
+      },
+      {
+        "code": "V001",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 521,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V002",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V002",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 183,
+        "call": "error"
+      },
+      {
+        "code": "V002",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 187,
+        "call": "error"
+      },
+      {
+        "code": "V002",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 194,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V003",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V003",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 454,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V004",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V005",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V005",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 703,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V006",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V006",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 643,
+        "call": "error"
+      },
+      {
+        "code": "V006",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 669,
+        "call": "error"
+      },
+      {
+        "code": "V006",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 695,
+        "call": "error"
+      },
+      {
+        "code": "V006",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 724,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V007",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V008",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V008",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 655,
+        "call": "error"
+      },
+      {
+        "code": "V008",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 689,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V009",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V010",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V011",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V012",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V012",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 400,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V013",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 235,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 340,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 357,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 366,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 416,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 553,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 623,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 660,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 685,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 711,
+        "call": "error"
+      },
+      {
+        "code": "V013",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 730,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V014",
+    "phase": "Evaluation",
+    "emitted": false,
+    "occurrences": []
+  },
+  {
+    "code": "V015",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V015",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 600,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V016",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V016",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 227,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "V017",
+    "phase": "Evaluation",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "V017",
+        "phase": "Evaluation",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 266,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "R001",
+    "phase": "Verification",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "R001",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 107,
+        "call": "error"
+      },
+      {
+        "code": "R001",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 199,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "R002",
+    "phase": "Verification",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "R002",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 127,
+        "call": "error"
+      },
+      {
+        "code": "R002",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 132,
+        "call": "error"
+      },
+      {
+        "code": "R002",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 137,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "R003",
+    "phase": "Verification",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "R003",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 150,
+        "call": "error"
+      },
+      {
+        "code": "R003",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 157,
+        "call": "error"
+      },
+      {
+        "code": "R003",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 161,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "R004",
+    "phase": "Verification",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "R004",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 102,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "R005",
+    "phase": "Verification",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "R005",
+        "phase": "Verification",
+        "severity": "Error",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 115,
+        "call": "error"
+      }
+    ]
+  },
+  {
+    "code": "W001",
+    "phase": "Warning",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "W001",
+        "phase": "Warning",
+        "severity": "Warning",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/eval/Evaluator.java",
+        "className": "Evaluator",
+        "line": 281,
+        "call": "warning"
+      }
+    ]
+  },
+  {
+    "code": "W003",
+    "phase": "Warning",
+    "emitted": true,
+    "occurrences": [
+      {
+        "code": "W003",
+        "phase": "Warning",
+        "severity": "Warning",
+        "source": "MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/verify/Verifier.java",
+        "className": "Verifier",
+        "line": 259,
+        "call": "warning"
+      }
+    ]
+  }
+]

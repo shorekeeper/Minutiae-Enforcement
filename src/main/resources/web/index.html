@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<!--
+  Minutiae Enforcement web panel. Registry-style navigator over the read-only
+  Hive projection. Provenance is expressed by tree descent; actions route
+  through the authoritative engine and audit. The management mode issues
+  sanctions through the same resolver and executor as a manual command.
+-->
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Minutiae</title>
+    <link rel="stylesheet" href="/app.css">
+</head>
+<body>
+<div id="login">
+    <form id="loginForm">
+        <div class="title">Minutiae</div>
+        <input id="token" type="password" placeholder="access token" autocomplete="off">
+        <button type="submit">Enter</button>
+        <div id="loginError"></div>
+    </form>
+</div>
+
+<div id="app" class="hidden">
+    <div class="toolbar">
+        <button id="back" title="Back">Back</button>
+        <button id="fwd" title="Forward">Forward</button>
+        <button id="up" title="Up">Up</button>
+        <button id="reload" title="Refresh">Refresh</button>
+        <input id="address" spellcheck="false" value="/">
+        <input id="search" placeholder="search: id, name">
+        <button id="manage" class="hidden" title="Issue a sanction">Manage…</button>
+        <span id="role" class="role"></span>
+    </div>
+    <div id="searchResults" class="hidden"></div>
+
+    <main>
+        <nav id="tree"></nav>
+        <div class="splitter"></div>
+        <section id="detail">
+            <div id="crumb"></div>
+            <div id="valuesWrap">
+                <table id="values">
+                    <thead><tr><th class="hn">Name</th><th class="ht">Type</th><th>Data</th></tr></thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <div id="actions"></div>
+        </section>
+    </main>
+
+    <div class="status">
+        <span id="statPath">/</span>
+        <span id="statCount"></span>
+    </div>
+</div>
+
+<div id="modal" class="hidden">
+    <div class="modal-box">
+        <div class="modal-head">
+            <span id="modalTitle">Transcript</span>
+            <button id="modalClose">Close</button>
+        </div>
+        <div class="modal-body"><table id="modalTable"></table></div>
+    </div>
+</div>
+
+<script src="/app.js"></script>
+</body>
+</html>

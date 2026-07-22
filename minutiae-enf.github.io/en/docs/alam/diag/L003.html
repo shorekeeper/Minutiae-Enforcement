@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" data-slug="docs/alam/diag/L003">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>L003 Invalid text escape - ALAM diagnostics</title>
+    <meta name="description" content="Cause and remedy for ALAM diagnostic L003: Invalid text escape.">
+    <link rel="stylesheet" href="../../../../assets/site.css">
+    <script src="../../../../assets/nav.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-clike.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/components/prism-java.min.js" defer></script>
+    <script src="../../../../assets/alam-lang.js" defer></script>
+    <script src="../../../../assets/alam-links.js" defer></script>
+    <script>
+        var ME_RELATED = [{"label":"Text","href":"../type/Text.html","group":"Entity"},{"label":"Lexical structure","href":"../guide/lexical.html","group":"Model"}];
+    </script>
+    <script src="../../../../assets/site.js" defer></script>
+</head>
+<body>
+<header class="site-header">
+    <a class="brand" href="../../../"><span class="mark">ME</span>Minutiae Enforcement
+        <span class="pill">docs</span></a>
+    <div class="header-search"><input type="search" autocomplete="off"></div>
+    <div class="header-tools"></div>
+</header>
+
+<div class="shell">
+    <nav class="sidebar" aria-label="Documentation"></nav>
+
+    <main>
+        <div class="breadcrumb"></div>
+        <article class="article-body">
+            <div class="entity-heading">
+                <h1>L003</h1>
+                <span class="entity-badge diag">diagnostic</span>
+                <span class="diag-phase">Lexing</span>
+            </div>
+            <p class="entity-def">Invalid text escape</p>
+
+            <table class="entity-meta">
+                <tr><th>Severity</th><td>Error</td></tr>
+                <tr><th>Phase</th><td>Lexing</td></tr>
+                <tr><th>Status</th><td>Emitted</td></tr>
+                <tr><th>Unit outcome</th><td>Error: unit rejected. Warning: unit may still be published.</td></tr>
+                <tr><th>Canonical message</th><td><code>invalid escape &#39;\&lt;character&gt;&#39;</code></td></tr>
+            </table>
+
+            <h2 id="cause">Cause</h2>
+            <p>A backslash inside a text literal is followed by a character outside the supported escape set.</p>
+<p>The supported escapes are double quote, backslash, n, t, and r. The lexer reports the unsupported escape and continues scanning the surrounding text literal.</p>
+
+            <h2 id="triggering-example">Example that triggers it</h2>
+            <pre><code class="language-alam">const Text path = &quot;bad\qescape&quot;;</code></pre>
+
+            <h2 id="remedy">Remedy</h2>
+            <p>Use one of the supported escape sequences: \&quot; for a quote, \\ for a backslash, \n for newline, \t for tab, or \r for carriage return.</p>
+<p>Remove the backslash when the following character is intended literally.</p>
+
+            <h2 id="emission-sites">Compiler emission sites</h2>
+            <div class="impl-note">
+                <span class="impl-label">Implementation notes, non-normative</span>
+                <table>
+    <tr>
+        <th>Class</th>
+        <th>Source</th>
+        <th>Line</th>
+    </tr>
+<tr>
+    <td><code>Lexer</code></td>
+    <td><code>MinutiaeEnforcement/src/main/java/org/synergyst/minutiae/lang/lex/Lexer.java</code></td>
+    <td>205</td>
+</tr>
+</table>
+                <p>Line numbers are generated from the current Java source and may change without changing the diagnostic contract.</p>
+            </div>
+
+            <h2 id="see-also">See also</h2>
+            <p>Use the Related rail for the entities and guides associated with this diagnostic.</p>
+
+            <footer class="site-footer">
+                <span>Minutiae Enforcement</span>
+                <a href="../">ALAM diagnostics</a>
+            </footer>
+        </article>
+    </main>
+
+    <aside class="rail" aria-label="Related"></aside>
+</div>
+</body>
+</html>
